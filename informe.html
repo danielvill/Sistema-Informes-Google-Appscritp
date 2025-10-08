@@ -1,0 +1,231 @@
+<style>
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #28a745;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+</div>
+<div class="container my-3">
+
+    <!-- Pegar en el apartado el enlace del formulario para que se pueda abrir el formulario -->
+    
+    <button class="btn btn-success mb-3"   
+        onclick="window.open('')"><!-- Pegar el codigo de enlace -->
+        ➕ Añadir Informe
+    </button>
+
+    <h2 class="mb-3">😃​ Informes entregados</h2>
+
+    <!-- Filtros -->
+    <div class="row mb-3">
+        <div class="col-6">
+            <input type="text" id="filtroNombre" class="form-control" placeholder="Filtrar por nombre">
+        </div>
+        <div class="col-6">
+            <input type="text" id="filtroGrupo" class="form-control" placeholder="Filtrar por grupo">
+        </div>
+    </div>
+
+    <!-- Contenedor de cards -->
+    <div id="cardsContainer" class="row g-3"></div>
+</div>
+<!-- Modal para añadir con el formulario -->
+
+<!-- Modal para editar -->
+<!-- Modal de edición (igual que ya tienes) -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Informe</h5>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+
+                    <div class="mb-2">
+                        <label for="">Nombre</label>
+                        <input class="form-control" id="edit_nombre" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label>Participo</label>
+                        <select class="form-control" id="edit_participo">
+                            <option value="Si">Si</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Hora</label>
+                        <input type="number" class="form-control" id="edit_hora">
+                    </div>
+                    <div class="mb-2">
+                        <label>Cursos</label>
+                        <input type="number" class="form-control" id="edit_cursos">
+                    </div>
+                    <div class="mb-2">
+                        <label>Comentario</label>
+                        <input class="form-control" id="edit_comentario">
+                    </div>
+                    <!-- Campos ocultos -->
+                    <input type="hidden" id="edit_tipo">
+                    <input type="hidden" id="edit_mes">
+                    <input type="hidden" id="edit_grupo">
+                    <input type="hidden" id="edit_año">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let dataSet = [];
+
+    // Funcion de animacion para lo que es la carga
+    function mostrarLoader() {
+        document.getElementById('loader').style.display = 'flex';
+    }
+
+    function ocultarLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
+
+    // Renderizar cards
+    function renderCards() {
+        mostrarLoader(); // Mostrar animación
+        const contenedor = document.getElementById("cardsContainer");
+        contenedor.innerHTML = "";
+
+        const filtroNombre = document.getElementById("filtroNombre").value.toLowerCase();
+        const filtroGrupo = document.getElementById("filtroGrupo").value.toLowerCase();
+
+        const filtrados = dataSet.filter(r =>
+            r.nombre.toLowerCase().includes(filtroNombre) &&
+            r.grupo.toLowerCase().includes(filtroGrupo)
+        );
+
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<div class="col-12"><div class="alert alert-warning">No hay resultados</div></div>`;
+            return;
+        }
+
+        filtrados.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "col-12 col-md-6 col-lg-4";
+            card.innerHTML = `
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">${r.nombre}</h5>
+            <p class="card-text mb-1"><strong>Tipo:</strong> ${r.tipo}</p>            
+            <p class="card-text mb-1"><strong>Grupo:</strong> ${r.grupo}</p>
+            <p class="card-text mb-1"><strong>Mes:</strong> ${r.mes} - <strong>Año:</strong> ${r.año}</p>
+            <p class="card-text mb-1"><strong>Participo:</strong> ${r.participo}</p>
+            <p class="card-text mb-1"><strong>Hora:</strong> ${r.hora}</p>
+            <p class="card-text mb-1"><strong>Cursos:</strong> ${r.cursos}</p>
+            <p class="card-text"><strong>Comentario:</strong> ${r.comentario}</p>
+            <div class="d-flex justify-content-end gap-2">
+              <button class="btn btn-sm btn-warning btn-lg w-100" onclick="editar('${r.nombre}')">✏️</button>
+              <button class="btn btn-sm btn-danger btn-lg w-100" onclick="eliminar('${r.nombre}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `;
+      ocultarLoader(); // Ocultar animación
+            contenedor.appendChild(card);
+        });
+    }
+
+    // Cargar datos desde Apps Script
+    function cargarInforme() {
+        google.script.run.withSuccessHandler(function (data) {
+            dataSet = data;
+            renderCards();
+        }).getInforme();
+    }
+
+    // Editar
+    window.editar = function (id) {
+        const registro = dataSet.find(r => r.nombre == id);
+        if (registro) {
+            $('#edit_nombre').val(registro.nombre);
+            $('#edit_tipo').val(registro.tipo);
+            $('#edit_mes').val(registro.mes);
+            $('#edit_participo').val(registro.participo);
+            $('#edit_hora').val(registro.hora);
+            $('#edit_cursos').val(registro.cursos);
+            $('#edit_grupo').val(registro.grupo);
+            $('#edit_comentario').val(registro.comentario);
+            $('#edit_año').val(registro.año);
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+    }
+
+    // Guardar edición
+    window.guardarEdicion = function () {
+        const id = $('#edit_nombre').val();
+        const newData = {
+            nombre: $('#edit_nombre').val(),
+            tipo: $('#edit_tipo').val(),
+            mes: $('#edit_mes').val(),
+            participo: $('#edit_participo').val(),
+            hora: $('#edit_hora').val(),
+            cursos: $('#edit_cursos').val(),
+            grupo: $('#edit_grupo').val(),
+            comentario: $('#edit_comentario').val(),
+            año: $('#edit_año').val()
+        };
+        google.script.run.withSuccessHandler(function (msg) {
+            alert(msg);
+            cargarInforme();
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+        }).editInforme(id, newData);
+    }
+
+    // Eliminar
+    window.eliminar = function (id) {
+        if (confirm("¿Seguro que deseas eliminar este registro?")) {
+            google.script.run.withSuccessHandler(function (msg) {
+                alert(msg);
+                cargarInforme();
+            }).deleteInforme(id);
+        }
+    }
+
+    // Eventos de filtro
+    document.getElementById("filtroNombre").addEventListener("input", renderCards);
+    document.getElementById("filtroGrupo").addEventListener("input", renderCards);
+
+    // Inicializar
+    cargarInforme();
+</script>

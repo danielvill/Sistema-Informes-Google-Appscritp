@@ -1,0 +1,130 @@
+<style>
+    .navbar-custom {
+        background-color: #5B3C88;
+    }
+
+    .navbar-custom .nav-link,
+    .navbar-custom .navbar-brand {
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .navbar-custom .nav-link:hover {
+        color: #ffe0cc;
+    }
+
+    .navbar-toggler {
+        border-color: #fff;
+    }
+</style>
+
+<!-- Menú -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="#">Sistema informes</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-person-arms-up me-1" viewBox="0 0 16 16">
+                        <path d="M8 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                        <path
+                            d="m5.93 6.704-.846 8.451a.768.768 0 0 0 1.523.203l.81-4.865a.59.59 0 0 1 1.165 0l.81 4.865a.768.768 0 0 0 1.523-.203l-.845-8.451A1.5 1.5 0 0 1 10.5 5.5L13 2.284a.796.796 0 0 0-1.239-.998L9.634 3.84a.7.7 0 0 1-.33.235c-.23.074-.665.176-1.304.176-.64 0-1.074-.102-1.305-.176a.7.7 0 0 1-.329-.235L4.239 1.286a.796.796 0 0 0-1.24.998l2.5 3.216c.317.316.475.758.43 1.204Z" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('publicador')">Publicador</a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-file-earmark-text me-1" viewBox="0 0 16 16">
+                        <path d="M5 7h6v1H5V7zm0 2h6v1H5V9z" />
+                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 
+      2 0 0 1 2-2h5.5L14 4.5zM13 4.5L9.5 1H4a1 
+      1 0 0 0-1 1v12a1 1 0 0 0 1 
+      1h8a1 1 0 0 0 1-1V4.5z" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('informe')">Informe</a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-person-x me-1" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 
+      1 6 0zM2 13s-1 0-1-1 1-4 7-4 
+      7 3 7 4-1 1-1 1H2z" />
+                        <path fill-rule="evenodd" d="M12.146 12.146a.5.5 0 0 
+      1 .708 0L14 13.293l1.146-1.147a.5.5 0 0 
+      1 .708.708L14.707 14l1.147 1.146a.5.5 0 0 
+      1-.708.708L14 14.707l-1.146 1.147a.5.5 0 0 
+      1-.708-.708L13.293 14l-1.147-1.146a.5.5 0 0 
+      1 0-.708z" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('inactivo')">Inactivos</a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-file-earmark-x-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.854 7.146 8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 1 1 .708-.708" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('faltantes')">Faltantes</a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        class="bi bi-database-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M3.904 1.777C4.978 1.289 6.427 1 8 1s3.022.289 4.096.777C13.125 2.245 14 2.993 14 4s-.875 1.755-1.904 2.223C11.022 6.711 9.573 7 8 7s-3.022-.289-4.096-.777C2.875 5.755 2 5.007 2 4s.875-1.755 1.904-2.223" />
+                        <path
+                            d="M2 6.161V7c0 1.007.875 1.755 1.904 2.223C4.978 9.71 6.427 10 8 10s3.022-.289 4.096-.777C13.125 8.755 14 8.007 14 7v-.839c-.457.432-1.004.751-1.49.972C11.278 7.693 9.682 8 8 8s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972" />
+                        <path
+                            d="M2 9.161V10c0 1.007.875 1.755 1.904 2.223C4.978 12.711 6.427 13 8 13s3.022-.289 4.096-.777C13.125 11.755 14 11.007 14 10v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972" />
+                        <path
+                            d="M2 12.161V13c0 1.007.875 1.755 1.904 2.223C4.978 15.711 6.427 16 8 16s3.022-.289 4.096-.777C13.125 14.755 14 14.007 14 13v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('respaldo')">Respaldo</a>
+                </li>
+
+                <li class="nav-item d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-pie-chart-fill" viewBox="0 0 16 16">
+                        <path
+                            d="M15.985 8.5H8.207l-5.5 5.5a8 8 0 0 0 13.277-5.5zM2 13.292A8 8 0 0 1 7.5.015v7.778zM8.5.015V7.5h7.485A8 8 0 0 0 8.5.015" />
+                    </svg>
+                    <a class="nav-link" href="#" onclick="cargarVista('dashboard')">Dashboard</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+<!-- Bootstrap JS -->
+
+<!-- Área donde se cargarán las vistas dinámicas -->
+<div id="vistaContenido">
+    <div class="container mt-5">
+        <h2>Bienvenido al Sistema de Informes</h2>
+        <p>Selecciona una opción del menú para comenzar.</p>
+    </div>
+</div>
+<!-- jQuery + DataTables + Bootstrap JS -->
+
+<script>
+    // Escuchar clicks en todos los enlaces del menú
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(function (enlace) {
+        enlace.addEventListener('click', function () {
+            // Buscar el menú colapsable
+            const menu = document.getElementById('menuPrincipal');
+            const bsCollapse = bootstrap.Collapse.getInstance(menu);
+            if (bsCollapse) {
+                bsCollapse.hide(); // Cierra el menú
+            }
+        });
+    });
+</script>

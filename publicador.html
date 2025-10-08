@@ -1,0 +1,310 @@
+<style>
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #28a745;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+</div>
+
+
+
+
+<div class="container">
+    <br>
+    <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-success" onclick="abrirModalNuevo()">➕ Añadir Publicador</button>
+    </div>
+
+    <h2 class="mb-4">​👨‍👨‍👦‍👦​ Publicadores</h2>
+    <table id="tabla" class="display table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>id_codigo</th>
+                <th>nombre</th>
+                <th>grupo</th>
+                <th>tipo</th>
+                <th>comentario</th>
+                <th>acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+
+<!-- Modal para añadir -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Añadir Publicador</h5>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-2">
+                        <label for="">Ingrese id</label>
+                        <input class="form-control" id="add_id_codigo" placeholder="ID Código">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese nombre</label>
+                        <input class="form-control" id="add_nombre" placeholder="Nombre">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese el grupo al que pertenece</label>
+                        <select class="form-control" id="add_grupo">
+                            <option value="Grupo 1">Grupo 1</option>
+                            <option value="Grupo 2">Grupo 2</option>
+                            <option value="Grupo 3">Grupo 3</option>
+                            <option value="Grupo 4">Grupo 4</option>
+                            <option value="Grupo 5">Grupo 5</option>
+                            <option value="Grupo 6">Grupo 6</option>
+                            <option value="Grupo 7">Grupo 7</option>
+                            <option value="Grupo 8">Grupo 8</option>
+                            <option value="Grupo 9">Grupo 9</option>
+                            <option value="Grupo 10">Grupo 10</option>
+                            <option value="Grupo 11">Grupo 11</option>
+                            <option value="Grupo 12">Grupo 12</option>
+                            <option value="Grupo 13">Grupo 13</option>
+                            <option value="Grupo 14">Grupo 14</option>
+                            <option value="Grupo 15">Grupo 15</option>
+                            <option value="Grupo 16">Grupo 16</option>
+                            <option value="Grupo 17">Grupo 17</option>
+                            <option value="Grupo 18">Grupo 18</option>
+                            <option value="Grupo 19">Grupo 19</option>
+                            <option value="Grupo 20">Grupo 20</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese el tipo que corresponda</label>
+                        <select class="form-control" id="add_tipo">
+                            <option value="Publicador">Publicador</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Auxiliar">Auxiliar</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese un comentario</label>
+                        <input class="form-control" id="add_comentario">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-success" onclick="guardarNuevo()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para editar -->
+<div class="modal fade" id="editModalPubli" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Publicador</h5>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="edit_id_codigo">
+                    <div class="mb-2">
+                        <label for="">Nombre</label>
+                        <input class="form-control" id="edit_nombre">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Grupo</label>
+                        <select class="form-control" id="edit_grupo">
+                            <option value="Grupo 1">Grupo 1</option>
+                            <option value="Grupo 2">Grupo 2</option>
+                            <option value="Grupo 3">Grupo 3</option>
+                            <option value="Grupo 4">Grupo 4</option>
+                            <option value="Grupo 5">Grupo 5</option>
+                            <option value="Grupo 6">Grupo 6</option>
+                            <option value="Grupo 7">Grupo 7</option>
+                            <option value="Grupo 8">Grupo 8</option>
+                            <option value="Grupo 9">Grupo 9</option>
+                            <option value="Grupo 10">Grupo 10</option>
+                            <option value="Grupo 11">Grupo 11</option>
+                            <option value="Grupo 12">Grupo 12</option>
+                            <option value="Grupo 13">Grupo 13</option>
+                            <option value="Grupo 14">Grupo 14</option>
+                            <option value="Grupo 15">Grupo 15</option>
+                            <option value="Grupo 16">Grupo 16</option>
+                            <option value="Grupo 17">Grupo 17</option>
+                            <option value="Grupo 18">Grupo 18</option>
+                            <option value="Grupo 19">Grupo 19</option>
+                            <option value="Grupo 20">Grupo 20</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Tipo</label>
+                        <select class="form-control" id="edit_tipo">
+                            <option value="Publicador">Publicador</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Auxiliar">Auxiliar</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Comentario</label>
+                        <input class="form-control" id="edit_comentario">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let tabla;
+    let dataSet = [];
+    
+    // Funcion de animacion para lo que es la carga
+    function mostrarLoader() {
+        document.getElementById('loader').style.display = 'flex';
+    }
+
+    function ocultarLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
+
+    // Cargar datos
+    function cargarDatos() {
+        mostrarLoader(); // Mostrar animación
+
+        google.script.run.withSuccessHandler(function (data) {
+            dataSet = data;
+            if (tabla) {
+                tabla.clear().rows.add(dataSet).draw();
+            } else {
+                tabla = $('#tabla').DataTable({
+                    data: dataSet,
+                    columns: [
+                        { data: 'id_codigo' },
+                        { data: 'nombre', defaultContent: '' },
+                        { data: 'grupo', defaultContent: '' },
+                        { data: 'tipo', defaultContent: '' },
+                        { data: 'comentario', defaultContent: '' },
+                        {
+                            data: null,
+                            render: function (row) {
+                                return `
+                    <button class="btn btn-sm btn-warning btn-lg w-100" onclick="editar('${row.id_codigo}')">✏️</button>
+                    <button class="btn btn-sm btn-danger btn-lg w-100" onclick="eliminar('${row.id_codigo}')">🗑️</button>
+                  `;
+                            }
+                        }
+                    ]
+                });
+            }
+             ocultarLoader(); // Ocultar animación
+        }).getPublicadores();
+    }
+
+    // Abrir modal de añadir
+    window.abrirModalNuevo = function () {
+        document.getElementById("addForm").reset();
+        new bootstrap.Modal(document.getElementById('addModal')).show();
+    }
+
+    // Guardar nuevo publicador
+    window.guardarNuevo = function () {
+        const record = {
+            id_codigo: $('#add_id_codigo').val(),
+            nombre: $('#add_nombre').val(),
+            grupo: $('#add_grupo').val(),
+            tipo: $('#add_tipo').val(),
+            comentario: $('#add_comentario').val()
+        };
+
+        google.script.run.withSuccessHandler(function (msg) {
+            alert(msg);
+            cargarDatos();
+            bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+        }).addPublicador(record);
+    }
+
+    // Editar
+    window.editar = function (id) {
+        const registro = dataSet.find(r => String(r.id_codigo) === String(id));
+        console.log("Registro encontrado:", registro);
+
+        const modalEl = document.getElementById('editModalPubli');
+        console.log("Modal encontrado:", modalEl);
+
+        if (registro && modalEl) {
+            $('#edit_id_codigo').val(registro.id_codigo);
+            $('#edit_nombre').val(registro.nombre);
+            $('#edit_grupo').val(registro.grupo);
+            $('#edit_tipo').val(registro.tipo);
+            $('#edit_comentario').val(registro.comentario);
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } else {
+            alert("No se encontró el modal o el registro");
+        }
+    }
+
+    // Guardar edición
+    window.guardarEdicion = function () {
+        const id = $('#edit_id_codigo').val();
+        const newData = {
+            nombre: $('#edit_nombre').val(),
+            grupo: $('#edit_grupo').val(),
+            tipo: $('#edit_tipo').val(),
+            comentario: $('#edit_comentario').val()
+        };
+        google.script.run.withSuccessHandler(function (msg) {
+            alert(msg);
+            cargarDatos();
+            bootstrap.Modal.getInstance(document.getElementById('editModalPubli')).hide();
+        }).editPublicador(id, newData);
+    }
+
+    // Eliminar
+    window.eliminar = function (id) {
+        if (confirm("¿Seguro que deseas eliminar este registro?")) {
+            google.script.run.withSuccessHandler(function (msg) {
+                alert(msg);
+                cargarDatos();
+            }).deletePublicador(id);
+        }
+    }
+    // Inicializar tabla al cargar la vista
+    cargarDatos();
+</script>

@@ -1,0 +1,103 @@
+<style>
+  .loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #28a745;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<div id="loader" class="loader-overlay">
+  <div class="spinner"></div>
+</div>
+
+
+<div class="container">
+  <br>
+  <h2 class="mb-4">❌​ Faltantes </h2>
+  <div class="accordion" id="accordionFaltantes">
+    <!-- Aquí se insertarán dinámicamente los grupos -->
+  </div>
+</div>
+<script>
+  // Funcion de animacion para lo que es la carga
+  function mostrarLoader() {
+    document.getElementById('loader').style.display = 'flex';
+  }
+
+  function ocultarLoader() {
+    document.getElementById('loader').style.display = 'none';
+  }
+
+
+  function cargarfaltantes() {
+    mostrarLoader(); // Mostrar animación
+
+    google.script.run.withSuccessHandler(function (data) {
+      const grupos = {};
+
+      // Agrupar por grupo
+      data.forEach(item => {
+        if (!grupos[item.grupo]) grupos[item.grupo] = [];
+        grupos[item.grupo].push(item.nombre);
+      });
+
+      const container = document.getElementById("accordionFaltantes");
+      container.innerHTML = ""; // Limpiar contenido previo
+
+      let index = 0;
+      for (const grupo in grupos) {
+        const collapseId = `collapse${index}`;
+        const headerId = `heading${index}`;
+        const cantidad = grupos[grupo].length;
+
+        const card = document.createElement("div");
+        card.className = "accordion-item";
+        card.innerHTML = `
+          <h2 class="accordion-header" id="${headerId}">
+            <button class="accordion-button ${index > 0 ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index === 0}" aria-controls="${collapseId}">
+              ${grupo} (${cantidad})
+            </button>
+          </h2>
+          <div id="${collapseId}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="${headerId}" data-bs-parent="#accordionFaltantes">
+            <div class="accordion-body">
+              <ul class="list-group">
+                ${grupos[grupo].map(nombre => `<li class="list-group-item">${nombre}</li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+        index++;
+      }
+      ocultarLoader(); // Ocultar animación
+    }).getFaltantes();
+  }
+
+  cargarfaltantes();
+</script>

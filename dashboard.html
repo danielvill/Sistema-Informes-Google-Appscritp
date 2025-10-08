@@ -1,0 +1,134 @@
+<style>
+    h2 {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 5px;
+        margin-top: 40px;
+    }
+
+    table.dataTable thead {
+        background-color: #3498db;
+        color: white;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #3498db;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #ecf0f1;
+    }
+</style>
+
+
+<div class="container">
+    <h1 class="text-center mb-4"> Resumen Mensual</h1>
+    <h2 id="tituloMes" class="text-center mb-3"></h2>
+
+    <div id="reporte" class="fs-5"></div>
+
+    <br>
+    <br>
+
+    <h1 class="text-center mb-4"> Resumen Anual</h1>
+    <div id="reporte2"></div>
+
+</div>
+
+
+
+
+
+<script>
+    // Codigo de resumen de los informes mensuales
+    google.script.run.withSuccessHandler(renderReporte).getReporteData();
+
+    function renderReporte(data) {
+        document.getElementById("tituloMes").innerText = data.mes + " " + data.año;
+
+        let html = `
+      <p><strong style="color:#6f4e37;">&#128100; Publicadores</strong><br>  <!-- icono persona color café -->
+      Horas: ${data.tipos.Publicador.horas}<br>
+      Cursos: ${data.tipos.Publicador.cursos}</p>
+
+      <p><strong style="color:#1E90FF;">&#128188; Regulares</strong><br> <!-- icono maletín color azul -->
+      Horas: ${data.tipos.Regular.horas}<br>
+      Cursos: ${data.tipos.Regular.cursos}</p>
+
+      <p><strong style="color:#228B22;">&#128101;+ Auxiliares</strong><br> <!-- icono personas con + color verde -->
+      Horas: ${data.tipos.Auxiliar.horas}<br>
+      Cursos: ${data.tipos.Auxiliar.cursos}</p>
+      
+      <hr>
+      <p><strong style="color:#DAA520;">Total de los que SÍ participaron:</strong> <span style="color:#000;">${data.totalSi}</span></p>
+      <p><strong style="color:#A52A2A;">Total de los que NO participaron:</strong> <span style="color:#000;">${data.totalNo}</span></p>
+    `;
+        document.getElementById("reporte").innerHTML = html;
+    }
+</script>
+
+
+<script>
+    // Crear tabla con ID única para DataTables
+    function crearTabla(titulo, encabezados, filas, id) {
+        let html = `<h2>${titulo}</h2><table id="${id}" class="display"><thead><tr>`;
+        encabezados.forEach(enc => html += `<th>${enc}</th>`);
+        html += `</tr></thead><tbody>`;
+        filas.forEach(fila => {
+            html += `<tr>`;
+            encabezados.forEach(enc => html += `<td>${fila[enc]}</td>`);
+            html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+        return html;
+    }
+
+    google.script.run.withSuccessHandler(function (reporte) {
+        let html = "";
+        let tablaIndex = 0;
+
+        Object.keys(reporte).forEach(año => {
+            html += `<h2>📅 Reporte del año ${año}</h2>`;
+
+            // Tabla de personas sin cursos bíblicos
+            const sinCursos = reporte[año].sinCursos.map(p => ({
+                "Nombre": p.nombre,
+                "Tipo": p.tipo,
+                "Mes": p.mes,
+                "Grupo": p.grupo
+            }));
+            html += crearTabla("Personas sin cursos bíblicos", ["Nombre", "Tipo", "Mes", "Grupo"], sinCursos, `tabla${tablaIndex++}`);
+
+            // Tabla de horas por tipo Regular
+            const horas = Object.entries(reporte[año].horasRegulares).map(([nombre, info]) => ({
+                "Nombre": nombre,
+                "Tipo": info.tipo,
+                "Grupo": info.grupo,
+                "Horas": info.horas
+            }));
+            html += crearTabla("Resumen de horas por tipo Regular", ["Nombre", "Tipo", "Grupo", "Horas"], horas, `tabla${tablaIndex++}`);
+        });
+
+        document.getElementById("reporte2").innerHTML = html;
+
+        // Inicializar DataTables después de insertar las tablas
+        setTimeout(() => {
+            for (let i = 0; i < tablaIndex; i++) {
+                $(`#tabla${i}`).DataTable({
+                    pageLength: 10,
+                    language: {
+                        url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                    }
+                });
+            }
+        }, 100);
+    }).getReportePorAnio();
+</script>

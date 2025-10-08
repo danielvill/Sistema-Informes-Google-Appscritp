@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de informes</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      background-color: #000000;
+      /* Fondo amarillo */
+    }
+
+    .form-container {
+      background-color: #5B3C88;
+      color: #ffffff;
+      /* Fondo blanco para el formulario */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(90, 15, 151, 0.1);
+      margin-top: 50px;
+      border: 3px solid white;
+      /* Este es para resaltar el color de la los alrededores */
+    }
+
+    .btn-send {
+      background-color: #452F64;
+      /* Botón morado */
+      color: #ffffff;
+      border: none;
+    }
+
+    .btn-send:hover {
+      background-color: #2600A3;
+      color: #ffffff;
+    }
+
+    .message {
+      display: none;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .message-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .message-error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="form-container">
+          <form id="myForm" class="container" onsubmit="submitForm(event)">
+            <h1 style="text-align: center;">Ingrese su informe</h1>
+            <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <select id="nombre" name="nombre" class="form-control" onchange="actualizarDatos()">
+                <option value="">Seleccione un nombre</option>
+                <? for (var i = 0; i < names.length; i++) { ?>
+                <option value="<?= names[i] ?>">
+                    <?= names[i] ?>
+                </option>
+                <? } ?>
+            </select>
+        </div>
+            <div class="mb-3" hidden>
+              <label for="tipo" class="form-label">Tipo</label>
+              <input type="text" id="tipo" name="tipo" class="form-control" readonly>
+            </div>
+            <div class="mb-3" hidden>
+              <label for="Mes">Mes</label>
+              <input type="text" id="mes" class="form-control" readonly>
+            </div>
+            <div class="mb-3" >
+              <Label>Participo en alguna faceta del ministerio</Label>
+              <select name="participo" id="participo" class="form-control">
+                                <option value="Si">Si participo</option>
+                                <option value="No">No participo</option>
+                            </select>
+            </div>
+            <div class="mb-3">
+              <label for="">Anotar horas si es precursor regular o auxiliar</label>
+              <input type="number" name="hora" id="hora" class="form-control" step="1">
+            </div>
+            <div class="mb-3">
+              <label for="">Número de cursos biblicos</label>
+              <input type="number" name="cursos" id="cursos" class="form-control">
+            </div>
+            <div class="mb-3 form-group" hidden>
+    <label for="grupo">Grupo al que pertenece</label>
+    <input type="text" id="grupo" name="grupo" class="form-control" readonly
+           placeholder="Se asignará automáticamente según el nombre seleccionado">
+</div>
+        <div class="mb-3">
+          <label for="comentario" class="form-label">Comentario</label>
+          <textarea class="form-control" id="comentario" name="comentario" rows="3"
+                                placeholder="Agregar comentario"></textarea>
+        </div>
+        <div class="mb-3" hidden>
+          <label for="year" class="form-label">Año de servicio</label>
+          <input type="text" id="year" class="form-control" readonly>
+        </div>
+        <div id="message-success" class="message message-success">Informe enviado correctamente</div>
+        <div id="message-error" class="message message-error">No se pudo enviar el informe, por favor
+          comuniquese
+          con su secretario</div>
+        <button type="submit" class="btn btn-send w-100">Enviar informe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+   
+
+    function submitForm(event) {
+    event.preventDefault();
+    const nombre = document.getElementById('nombre').value;
+    const tipo = document.getElementById('tipo').value;
+    const mes = document.getElementById('mes').value;
+    const participo = document.getElementById('participo').value;
+    const hora = document.getElementById('hora').value;
+    const cursos = document.getElementById('cursos').value;
+    const grupo = document.getElementById('grupo').value;
+    const comentario = document.getElementById('comentario').value;
+    const year = document.getElementById('year').value;
+
+    // Validación para Regular y Auxiliar
+    if ((tipo === 'Regular' || tipo === 'Auxiliar') && (hora === '' || hora === null || hora === undefined)) {
+        mostrarPaginaError2();
+        return false;
+    }
+
+    // Enviar datos
+    google.script.run.withSuccessHandler(function (response) {
+        if (response === 'success') {
+            mostrarPaginaGracias();
+        } else if (response.includes('Ya ingresó su informe')) {
+            mostrarPaginaError1();
+        } else if (response.includes('Debe ingresar las horas')) {
+            mostrarPaginaError2();
+        } else {
+            mostrarPaginaError1();
+        }
+    }).withFailureHandler(function(error) {
+        mostrarPaginaError1();
+    }).submitData(nombre, tipo, mes, participo, hora, cursos, grupo, comentario, year);
+}
+
+
+// Funcion para Mostrar los mensajeas de confirmacion
+
+// Agregar al inicio de tu form.html:
+let originalFormHTML = document.body.innerHTML; // Guarda el HTML original al cargar la página
+
+// ===== 2. Funciones reutilizables para validaciones =====
+function configurarMesAnterior() {
+    const mesInput = document.getElementById("mes");
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    let fechaActual = new Date();
+    let mesActual = fechaActual.getMonth();
+    let mesAnterior = mesActual === 0 ? 11 : mesActual - 1;
+
+    mesInput.value = meses[mesAnterior];
+}
+
+function configurarAñoServicio() {
+    const yearInput = document.getElementById("year");
+    let fechaActual = new Date();
+    let mesActual = fechaActual.getMonth();
+    let añoActual = fechaActual.getFullYear();
+    let añoServicio = mesActual >= 9 ? añoActual + 1 : añoActual;
+
+    yearInput.value = añoServicio;
+}
+
+function bloquearDecimales(inputId) {
+    const input = document.getElementById(inputId);
+    input.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, ''); // Solo números enteros
+    });
+}
+
+function bloquearvalidarHorasPorTipo() {
+    const tipo = document.getElementById('tipo').value;
+    const horaInput = document.getElementById('hora');
+    
+    if (tipo === 'Regular' || tipo === 'Auxiliar') {
+        horaInput.required = true;
+        horaInput.style.borderColor = '#007bff'; // Destacar el campo
+        horaInput.placeholder = 'Debe ingresar las horas (mínimo 0)';
+    } else {
+        horaInput.required = false;
+        horaInput.style.borderColor = '';
+        horaInput.placeholder = '';
+    }
+}
+
+
+// ===== 3. Función para restaurar el formulario =====
+function restoreForm() {
+    // 1. Restaurar el HTML original
+    document.body.innerHTML = originalFormHTML;
+    
+    // 2. Reiniciar Select2 (si lo usas)
+    $(document).ready(function() {
+        $('select').select2();
+    });
+    
+    // 3. Volver a aplicar todas las validaciones
+    configurarMesAnterior();
+    configurarAñoServicio();
+    bloquearDecimales("hora");
+    bloquearDecimales("cursos");
+    bloquearvalidarHorasPorTipo();
+}
+
+
+
+
+// ===== 4. Al cargar la página por primera vez =====
+document.addEventListener("DOMContentLoaded", function () {
+    configurarMesAnterior();
+    configurarAñoServicio();
+    bloquearDecimales("hora");
+    bloquearDecimales("cursos");
+    bloquearvalidarHorasPorTipo();
+});
+
+function mostrarPaginaGracias() {
+    document.body.innerHTML = `
+        <div style="text-align: center; padding: 50px; font-family: Arial;">
+            <h1 style="color: green;">✓ ¡Informe Enviado Correctamente!</h1>
+            <p style="color: white;">Su informe ha sido registrado exitosamente.</p>
+           <button onclick="restoreForm()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                Volver al formulario
+            </button>
+        </div>
+    `;
+}
+
+function mostrarPaginaError1() {
+    document.body.innerHTML = `
+        <div style="text-align: center; padding: 50px; font-family: Arial;">
+            <h1 style="color: orange;">⚠ Informe ya ingresado</h1>
+            <p style="color: white">Ya ha ingresado su informe anteriormente. No puede ingresar el mismo informe dos veces.</p>
+             <button onclick="restoreForm()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                Volver al formulario
+            </button>
+        </div>
+    `;
+}
+
+function mostrarPaginaError2() {
+    document.body.innerHTML = `
+        <div style="text-align: center; padding: 50px; font-family: Arial;">
+            <h1 style="color: red;">X Debe ingresar las horas</h1>
+            <p style="color: white ">Como precursor Regular o Auxiliar, debe llenar el campo de horas obligatoriamente.</p>
+            <button onclick="restoreForm()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                Volver al formulario
+            </button>
+        </div>
+    `;
+}
+
+
+
+
+
+
+
+
+
+
+
+// Función adicional para validar en tiempo real cuando cambie el tipo
+function validarHorasPorTipo() {
+    const tipo = document.getElementById('tipo').value;
+    const horaInput = document.getElementById('hora');
+    
+    if (tipo === 'Regular' || tipo === 'Auxiliar') {
+        horaInput.required = true;
+        horaInput.style.borderColor = '#007bff'; // Destacar el campo
+        horaInput.placeholder = 'Debe ingresar las horas (mínimo 0)';
+    } else {
+        horaInput.required = false;
+        horaInput.style.borderColor = '';
+        horaInput.placeholder = '';
+    }
+}
+
+        $(document).ready(function () {
+            $('select').select2();
+        });
+  </script>
+
+  <script>
+    // Este es codigo para obtener el mes anterior no el actual para los informes
+        document.addEventListener("DOMContentLoaded", function () {
+            const mesInput = document.getElementById("mes");
+            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            let fechaActual = new Date();
+            let mesActual = fechaActual.getMonth(); // Obtiene el mes actual (0=Enero, 11=Diciembre)
+
+            let mesAnterior = mesActual === 0 ? 11 : mesActual - 1; // Si es Enero, el anterior es Diciembre
+
+            mesInput.value = meses[mesAnterior]; // Establece el mes anterior en el input
+        });
+
+
+        // Validacion para lo que es el año 
+        document.addEventListener("DOMContentLoaded", function () {
+            const yearInput = document.getElementById("year");
+            let fechaActual = new Date();
+            let mesActual = fechaActual.getMonth(); // 0=Enero, 11=Diciembre
+            let añoActual = fechaActual.getFullYear(); // Año actual
+
+            // Si el mes es Octubre (9), Noviembre (10) o Diciembre (11), tomar el próximo año
+            let añoServicio = mesActual >= 9 ? añoActual + 1 : añoActual;
+
+            yearInput.value = añoServicio; // Establece el año correspondiente en el input
+        });
+
+        // validacion para no aceptar decimales tanto horas como cursos de la biblia
+        document.addEventListener("DOMContentLoaded", function () {
+            const horaInput = document.getElementById("hora");
+
+            horaInput.addEventListener("input", function () {
+                // Si el valor contiene un punto decimal, eliminarlo
+                this.value = this.value.replace(/\D/g, ''); // Solo números enteros
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const horaInput = document.getElementById("cursos");
+
+            horaInput.addEventListener("input", function () {
+                // Si el valor contiene un punto decimal, eliminarlo
+                this.value = this.value.replace(/\D/g, ''); // Solo números enteros
+            });
+        });
+
+  </script>
+
+
+<script>
+    // Crear los mapas de correspondencia nombre-grupo y nombre-tipo desde Apps Script
+    let nombreGrupoMap = {};
+    let nombreTipoMap = {};
+
+    try {
+        // Obtener los mapas desde el template de Apps Script
+        nombreGrupoMap = JSON.parse('<?= nombreGrupoMap ?>');
+        nombreTipoMap = JSON.parse('<?= nombreTipoMap ?>');
+    } catch (error) {
+        console.error('Error al parsear nombreGrupoMap o nombreTipoMap:', error);
+        nombreGrupoMap = {};
+        nombreTipoMap = {};
+    }
+
+    // Función que se ejecuta cuando cambia la selección del nombre
+    function actualizarDatos() {
+        const nombreSelect = document.getElementById('nombre');
+        const grupoInput = document.getElementById('grupo');
+        const tipoInput = document.getElementById('tipo'); // Nuevo campo para Tipo
+
+        const nombreSeleccionado = nombreSelect.value;
+
+        // Actualizar el campo grupo
+        if (nombreSeleccionado && nombreGrupoMap[nombreSeleccionado]) {
+            grupoInput.value = nombreGrupoMap[nombreSeleccionado];
+        } else {
+            grupoInput.value = '';
+        }
+
+        // Actualizar el campo tipo
+        if (nombreSeleccionado && nombreTipoMap[nombreSeleccionado]) {
+            tipoInput.value = nombreTipoMap[nombreSeleccionado];
+        } else {
+            tipoInput.value = '';
+        }
+    }
+</script>
+ 
+
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+</body>
+</html>
