@@ -124,6 +124,7 @@
     // Renderizar cards
     function renderCards() {
         mostrarLoader(); // Mostrar animación
+        ocultarLoader(); // Ocultar animación
         const contenedor = document.getElementById("cardsContainer");
         contenedor.innerHTML = "";
 
@@ -161,7 +162,7 @@
           </div>
         </div>
       `;
-      ocultarLoader(); // Ocultar animación
+     
             contenedor.appendChild(card);
         });
     }
