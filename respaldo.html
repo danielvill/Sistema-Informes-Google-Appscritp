@@ -53,10 +53,110 @@
                 <th>Grupo</th>
                 <th>Comentario</th>
                 <th>Año</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
+
+
+    <!-- Modal para editar -->
+    <!-- Modal de edición (igual que ya tienes) -->
+    <div class="modal fade" id="editModalRespaldo" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Informe</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="edit_id">
+                        <div class="mb-2">
+                            <label for="">Nombre</label>
+                            <input class="form-control" id="edit_nombre" >
+                        </div>
+                        <div class="mb-2">
+                            <label>Tipo</label>
+                            <select class="form-control" id="edit_tipo">
+                                <option value="Publicador">Publicador</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Auxiliar">Auxiliar</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label>Mes</label>
+                            <select class="form-control" id="edit_mes">
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label>Participo</label>
+                            <select class="form-control" id="edit_participo">
+                                <option value="Si">Si</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label>Hora</label>
+                            <input type="number" class="form-control" id="edit_hora">
+                        </div>
+                        <div class="mb-2">
+                            <label>Cursos</label>
+                            <input type="number" class="form-control" id="edit_cursos">
+                        </div>
+                        <div class="mb-2">
+                            <label>Grupo</label>
+                            <select class="form-control" id="edit_grupo">
+                                <option value="Grupo 1">Grupo 1</option>
+                                <option value="Grupo 2">Grupo 2</option>
+                                <option value="Grupo 3">Grupo 3</option>
+                                <option value="Grupo 4">Grupo 4</option>
+                                <option value="Grupo 5">Grupo 5</option>
+                                <option value="Grupo 6">Grupo 6</option>
+                                <option value="Grupo 7">Grupo 7</option>
+                                <option value="Grupo 8">Grupo 8</option>
+                                <option value="Grupo 9">Grupo 9</option>
+                                <option value="Grupo 10">Grupo 10</option>
+                                <option value="Grupo 11">Grupo 11</option>
+                                <option value="Grupo 12">Grupo 12</option>
+                                <option value="Grupo 13">Grupo 13</option>
+                                <option value="Grupo 14">Grupo 14</option>
+                                <option value="Grupo 15">Grupo 15</option>
+                                <option value="Grupo 16">Grupo 16</option>
+                                <option value="Grupo 17">Grupo 17</option>
+                                <option value="Grupo 18">Grupo 18</option>
+                                <option value="Grupo 19">Grupo 19</option>
+                                <option value="Grupo 20">Grupo 20</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label>Comentario</label>
+                            <input class="form-control" id="edit_comentario">
+                        </div>
+                        <div class="mb-2">
+                            <label>Año</label>
+                            <input type="text" class="form-control" id="edit_año">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <script>
@@ -93,12 +193,75 @@
                             { data: 'grupo', defaultContent: '' },
                             { data: 'comentario', defaultContent: '' },
                             { data: 'año', defaultContent: '' },
+                            {
+                                data: null,
+                                render: function (data, type, row) {
+                                    return `
+                <button class="btn btn-sm btn-warning" onclick="editar(${row.id})">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="eliminar(${row.id})">🗑️</button>
+            `;
+                                }
+                            }
 
                         ]
                     });
                 }
                 ocultarLoader(); // Ocultar animación
             }).getRespaldo();
+        }
+
+
+        // Editar
+        window.editar = function (id) {
+            const registro = dataSet.find(r => String(r.id) === String(id));
+            const modalEl = document.getElementById('editModalRespaldo'); // ✅ Aquí defines modalEl
+            
+            if (registro && modalEl) {
+                $('#edit_id').val(registro.id);
+                $('#edit_nombre').val(registro.nombre);
+                $('#edit_tipo').val(registro.tipo);
+                $('#edit_mes').val(registro.mes);
+                $('#edit_participo').val(registro.participo);
+                $('#edit_hora').val(registro.hora);
+                $('#edit_cursos').val(registro.cursos);
+                $('#edit_grupo').val(registro.grupo);
+                $('#edit_comentario').val(registro.comentario);
+                $('#edit_año').val(registro.año);
+                new bootstrap.Modal(document.getElementById('editModalRespaldo')).show();
+            } else {
+                alert("No se encontró el modal o el registro");
+            }
+        }
+
+        // Guardar edición
+        window.guardarEdicion = function () {
+            const id = $('#edit_id').val();
+            const newData = {
+                nombre: $('#edit_nombre').val(),
+                tipo: $('#edit_tipo').val(),
+                mes: $('#edit_mes').val(),
+                participo: $('#edit_participo').val(),
+                hora: $('#edit_hora').val(),
+                cursos: $('#edit_cursos').val(),
+                grupo: $('#edit_grupo').val(),
+                comentario: $('#edit_comentario').val(),
+                año: $('#edit_año').val()
+            };
+            google.script.run.withSuccessHandler(function (msg) {
+                alert(msg);
+                cargarRespaldo();
+                bootstrap.Modal.getInstance(document.getElementById('editModalPubli')).hide();
+            }).editRespaldo(id, newData);
+        }
+
+        // Eliminar
+        window.eliminar = function (id) {
+            if (confirm("¿Seguro que deseas eliminar este registro?")) {
+                google.script.run.withSuccessHandler(function (msg) {
+                    alert(msg);
+                    cargarRespaldo();
+                }).deleteRespaldo(id);
+            }
         }
         cargarRespaldo();
     </script>

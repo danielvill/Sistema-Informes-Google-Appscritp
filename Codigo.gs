@@ -445,12 +445,43 @@ function getRespaldo() {
   const headers = data[0];
   const rows = data.slice(1);
 
-  return rows.map(r => {
-    let obj = {};
+  return rows.map((r, index) => {
+    let obj = { id: index + 2 }; // +2 porque index empieza en 0 y la fila 1 es encabezado
     headers.forEach((h, i) => obj[h] = r[i]);
     return obj;
   });
 }
+
+
+// Funcion para editar respaldo esto con el id universal que si se puede hacer
+function editRespaldo(id, newData) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+
+  sheet.getRange(id, 2, 1, 9).setValues([[
+    newData.nombre,
+    newData.tipo,
+    newData.mes,
+    newData.participo,
+    newData.hora,
+    newData.cursos,
+    newData.grupo,
+    newData.comentario,
+    newData.año
+  ]]);
+
+  return "Registro actualizado correctamente";
+}
+
+// Funcion para eliminar
+
+function deleteRespaldo(id) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+  sheet.deleteRow(id);
+  return "Registro eliminado correctamente";
+}
+
 
 
 // Vista para los siervos ministeriales

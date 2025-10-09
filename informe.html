@@ -54,6 +54,12 @@
         <div class="col-6">
             <input type="text" id="filtroGrupo" class="form-control" placeholder="Filtrar por grupo">
         </div>
+        <div class="col-6">
+            <input type="text" id="filtroParticipo" class="form-control" placeholder="Coloque Si o No">
+        </div>
+        <div class="col-6">
+            <input type="text" id="filtroTipo" class="form-control" placeholder="Coloque: Publicador,Auxiliar,Regular">
+        </div>
     </div>
 
     <!-- Contenedor de cards -->
@@ -124,16 +130,21 @@
     // Renderizar cards
     function renderCards() {
         mostrarLoader(); // Mostrar animación
-        ocultarLoader(); // Ocultar animación
+         ocultarLoader(); // Ocultar animación
         const contenedor = document.getElementById("cardsContainer");
         contenedor.innerHTML = "";
 
         const filtroNombre = document.getElementById("filtroNombre").value.toLowerCase();
         const filtroGrupo = document.getElementById("filtroGrupo").value.toLowerCase();
+        const filtroParticipo = document.getElementById("filtroParticipo").value.toLowerCase();
+        const filtroTipo = document.getElementById("filtroTipo").value.toLowerCase();
+        
 
         const filtrados = dataSet.filter(r =>
             r.nombre.toLowerCase().includes(filtroNombre) &&
-            r.grupo.toLowerCase().includes(filtroGrupo)
+            r.grupo.toLowerCase().includes(filtroGrupo) &&
+            r.participo.toLowerCase().includes(filtroParticipo) &&
+            r.tipo.toLowerCase().includes(filtroTipo)
         );
 
         if (filtrados.length === 0) {
@@ -226,6 +237,8 @@
     // Eventos de filtro
     document.getElementById("filtroNombre").addEventListener("input", renderCards);
     document.getElementById("filtroGrupo").addEventListener("input", renderCards);
+    document.getElementById("filtroParticipo").addEventListener("input", renderCards);
+    document.getElementById("filtroTipo").addEventListener("input", renderCards);
 
     // Inicializar
     cargarInforme();
