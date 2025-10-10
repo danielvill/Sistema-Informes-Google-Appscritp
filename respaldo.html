@@ -250,7 +250,7 @@
             google.script.run.withSuccessHandler(function (msg) {
                 alert(msg);
                 cargarRespaldo();
-                bootstrap.Modal.getInstance(document.getElementById('editModalPubli')).hide();
+                bootstrap.Modal.getInstance(document.getElementById('editModalRespaldo')).hide();
             }).editRespaldo(id, newData);
         }
 

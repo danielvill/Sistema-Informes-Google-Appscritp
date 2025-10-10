@@ -1,4 +1,19 @@
 <style>
+    .vista-estadisticas {
+        display: none;
+    }
+
+    .vista-reportes {
+        display: block;
+    }
+
+    .filtros-estadisticas {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
     h2 {
         color: #2c3e50;
         border-bottom: 2px solid #3498db;
@@ -27,59 +42,466 @@
         background-color: #ecf0f1;
     }
 </style>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-center">Resumen Mensual</h1>
+        <div>
+            <button id="btnChart" class="btn btn-outline-primary me-2">
+                📊 Ver estadísticas
+            </button>
+            <button id="btnReportes" class="btn btn-outline-secondary" style="display: none;">
+                📄 Ver reportes
+            </button>
+        </div>
+    </div>
 
+    <!-- Vista de Reportes (original) -->
+    <div id="vistaReportes" class="vista-reportes">
+        <h2 id="tituloMes" class="text-center mb-3"></h2>
+        <div id="reporte" class="fs-5"></div>
+        <br><br>
+        <h1 class="text-center mb-4">Resumen Anual</h1>
+        <div id="reporte2"></div>
+    </div>
 
-<div class="container">
-    <h1 class="text-center mb-4"> Resumen Mensual</h1>
-    <h2 id="tituloMes" class="text-center mb-3"></h2>
+    <!-- Vista de Estadísticas -->
+    <div id="vistaEstadisticas" class="vista-estadisticas">
+        <h2 class="text-center mb-4">📊 Estadísticas</h2>
 
-    <div id="reporte" class="fs-5"></div>
+        <!-- Filtros de Año y Mes -->
+        <div class="filtros-estadisticas">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Seleccionar Año:</label>
+                    <select id="selectAno" class="form-select">
+                        <option value="">Cargando años...</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Seleccionar Mes:</label>
+                    <select id="selectMes" class="form-select">
+                        <option value="">Cargando meses...</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button id="btnActualizar" class="btn btn-primary w-100">
+                        🔄 Actualizar Estadísticas
+                    </button>
+                </div>
+            </div>
+        </div>
 
-    <br>
-    <br>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">📈 Participación Mensual</h5>
+                        <p class="text-muted small">Año seleccionado: <span id="anoParticipacion">-</span></p>
+                        <canvas id="chartParticipacion"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">📚 Total de cursos bíblicos por Grupo</h5>
+                        <p class="text-muted small">Período: <span id="periodoCursos">-</span></p>
+                        <canvas id="chartCursos"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <h1 class="text-center mb-4"> Resumen Anual</h1>
-    <div id="reporte2"></div>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">👥 Hermanos con cursos bíblicos por Grupo</h5>
+                        <p class="text-muted small">Período: <span id="periodoPersonas">-</span></p>
+                        <canvas id="chartPersonasCursos"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📊 Resumen por Tipo</h5>
+                <p class="text-muted small">Período: <span id="periodoTipos">-</span></p>
+                <div id="tablaTipos"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
-
-
-
-
 <script>
-    // Codigo de resumen de los informes mensuales
+    // Variables globales
+    let chartParticipacion = null;
+    let chartCursos = null;
+    let datosCompletos = {
+        cursosPorGrupo: {},
+        participacion: [],
+        resumenPorTipo: {}
+    };
+
+    // Función para cambiar entre vistas
+    function mostrarEstadisticas() {
+        document.getElementById('vistaReportes').style.display = 'none';
+        document.getElementById('vistaEstadisticas').style.display = 'block';
+        document.getElementById('btnChart').style.display = 'none';
+        document.getElementById('btnReportes').style.display = 'inline-block';
+        cargarFiltros();
+    }
+
+    function mostrarReportes() {
+        document.getElementById('vistaEstadisticas').style.display = 'none';
+        document.getElementById('vistaReportes').style.display = 'block';
+        document.getElementById('btnReportes').style.display = 'none';
+        document.getElementById('btnChart').style.display = 'inline-block';
+    }
+
+    // Event listeners para los botones
+    document.getElementById("btnChart").addEventListener("click", mostrarEstadisticas);
+    document.getElementById("btnReportes").addEventListener("click", mostrarReportes);
+    document.getElementById("btnActualizar").addEventListener("click", actualizarEstadisticas);
+
+    // Cargar filtros de años y meses
+    function cargarFiltros() {
+        // Personas con cursos por grupo
+        google.script.run.withSuccessHandler(function (data) {
+            datosCompletos.personasConCursos = data; // 👈 nuevo objeto
+            poblarSelectores();
+        }).getPersonasConCursosPorGrupo();
+
+        // Cursos por grupo (suma de cursos)
+        google.script.run.withSuccessHandler(function (data) {
+            datosCompletos.cursosPorGrupo = data;
+        }).getCursosPorGrupo();
+
+        // Participación
+        google.script.run.withSuccessHandler(function (data) {
+            datosCompletos.participacion = data;
+        }).getParticipacionPorMes();
+
+        // Resumen por tipo
+        google.script.run.withSuccessHandler(function (data) {
+            datosCompletos.resumenPorTipo = data;
+        }).getResumenPorTipo();
+    }
+
+    function poblarSelectores() {
+        const periodos = Object.keys(datosCompletos.cursosPorGrupo);
+        const anos = new Set();
+        const meses = new Set();
+
+        periodos.forEach(periodo => {
+            const [mes, ano] = periodo.split('-');
+            anos.add(ano);
+            meses.add(mes);
+        });
+
+        // Poblar select de años
+        const selectAno = document.getElementById('selectAno');
+        selectAno.innerHTML = '<option value="">Todos los años</option>';
+        Array.from(anos).sort().forEach(ano => {
+            selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+        });
+
+        // Poblar select de meses
+        const selectMes = document.getElementById('selectMes');
+        const mesesOrden = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        selectMes.innerHTML = '<option value="">Todos los meses</option>';
+        mesesOrden.forEach(mes => {
+            if (meses.has(mes)) {
+                selectMes.innerHTML += `<option value="${mes}">${mes}</option>`;
+            }
+        });
+
+        // Seleccionar el período más reciente por defecto
+        if (periodos.length > 0) {
+            const ultimoPeriodo = periodos[periodos.length - 1];
+            const [ultimoMes, ultimoAno] = ultimoPeriodo.split('-');
+            selectAno.value = ultimoAno;
+            selectMes.value = ultimoMes;
+            actualizarEstadisticas();
+        }
+    }
+
+    function actualizarEstadisticas() {
+        const ano = document.getElementById('selectAno').value;
+        const mes = document.getElementById('selectMes').value;
+
+        // Actualizar gráfico de cursos por grupo
+        actualizarGraficoCursos(ano, mes);
+
+        // Actualizar gráfico de participación
+        actualizarGraficoParticipacion(ano);
+
+        // Actualizar tabla de resumen por tipo
+        actualizarTablaTipos(ano, mes);
+
+        actualizarGraficoPersonasCursos(ano, mes); // 👈 aquí
+    }
+
+    function actualizarGraficoCursos(ano, mes) {
+        let periodo = '';
+        if (mes && ano) {
+            periodo = `${mes}-${ano}`;
+        } else if (ano) {
+            // Buscar el primer mes disponible del año
+            const periodosAno = Object.keys(datosCompletos.cursosPorGrupo).filter(p => p.endsWith(ano));
+            periodo = periodosAno[0] || '';
+        } else if (mes) {
+            // Buscar el primer año disponible del mes
+            const periodosMes = Object.keys(datosCompletos.cursosPorGrupo).filter(p => p.startsWith(mes));
+            periodo = periodosMes[0] || '';
+        } else {
+            // Tomar el último período disponible
+            const periodos = Object.keys(datosCompletos.cursosPorGrupo);
+            periodo = periodos[periodos.length - 1] || '';
+        }
+
+        document.getElementById('periodoCursos').innerText = periodo || 'Sin datos';
+
+        if (!periodo || !datosCompletos.cursosPorGrupo[periodo]) {
+            if (chartCursos) chartCursos.destroy();
+            return;
+        }
+
+        const grupos = Object.keys(datosCompletos.cursosPorGrupo[periodo]);
+        const valores = Object.values(datosCompletos.cursosPorGrupo[periodo]);
+
+        const ctx = document.getElementById("chartCursos");
+
+        if (chartCursos) {
+            chartCursos.destroy();
+        }
+
+        chartCursos = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: grupos,
+                datasets: [{
+                    data: valores,
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#17a2b8', '#fd7e14']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                return `${label}: ${value} ${value !== 1 ? '' : ''}  cursos bíblicos`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+
+    // Esta es para los grupo 
+    let chartPersonasCursos = null;
+
+    function actualizarGraficoPersonasCursos(ano, mes) {
+        let periodo = '';
+        if (mes && ano) {
+            periodo = `${mes}-${ano}`;
+        } else {
+            const periodos = Object.keys(datosCompletos.personasConCursos);
+            periodo = periodos[periodos.length - 1] || '';
+        }
+
+        document.getElementById('periodoPersonas').innerText = periodo || 'Sin datos';
+
+        if (!periodo || !datosCompletos.personasConCursos[periodo]) {
+            if (chartPersonasCursos) chartPersonasCursos.destroy();
+            return;
+        }
+
+        const grupos = Object.keys(datosCompletos.personasConCursos[periodo]);
+        const valores = Object.values(datosCompletos.personasConCursos[periodo]);
+
+        const ctx = document.getElementById("chartPersonasCursos");
+
+        if (chartPersonasCursos) chartPersonasCursos.destroy();
+
+        chartPersonasCursos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: grupos,
+                datasets: [{
+                    label: "Personas con cursos",
+                    data: valores,
+                    backgroundColor: "#17a2b8"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+
+
+    function actualizarGraficoParticipacion(ano) {
+        let datosFiltrados = datosCompletos.participacion;
+
+        if (ano) {
+            datosFiltrados = datosCompletos.participacion.filter(r => r.año == ano);
+        }
+
+        document.getElementById('anoParticipacion').innerText = ano || 'Todos';
+
+        const labels = datosFiltrados.map(r => r.mes + " " + r.año);
+        const si = datosFiltrados.map(r => r.si);
+        const no = datosFiltrados.map(r => r.no);
+
+        const ctx = document.getElementById("chartParticipacion");
+
+        if (chartParticipacion) {
+            chartParticipacion.destroy();
+        }
+
+        chartParticipacion = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Sí participaron",
+                        data: si,
+                        backgroundColor: "#28a745"
+                    },
+                    {
+                        label: "No participaron",
+                        data: no,
+                        backgroundColor: "#dc3545"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function actualizarTablaTipos(ano, mes) {
+        let periodo = '';
+        if (mes && ano) {
+            periodo = `${mes}-${ano}`;
+        }
+
+        document.getElementById('periodoTipos').innerText = periodo || 'Todos los períodos';
+
+        let html = "";
+
+        if (periodo && datosCompletos.resumenPorTipo[periodo]) {
+            // Mostrar solo el período seleccionado
+            html += `<h5 class="mt-3">${periodo}</h5>
+                         <table class="table table-bordered table-striped">
+                         <thead class="table-dark">
+                         <tr><th>Tipo</th><th>Cantidad</th><th>Horas</th><th>Cursos</th></tr>
+                         </thead><tbody>`;
+            Object.keys(datosCompletos.resumenPorTipo[periodo]).forEach(tipo => {
+                const t = datosCompletos.resumenPorTipo[periodo][tipo];
+                html += `<tr><td>${tipo}</td><td>${t.cantidad}</td><td>${t.horas}</td><td>${t.cursos}</td></tr>`;
+            });
+            html += "</tbody></table>";
+        } else if (ano) {
+            // Mostrar todos los períodos del año seleccionado
+            Object.keys(datosCompletos.resumenPorTipo)
+                .filter(p => p.endsWith(ano))
+                .forEach(periodo => {
+                    html += `<h5 class="mt-3">${periodo}</h5>
+                                 <table class="table table-bordered table-striped">
+                                 <thead class="table-dark">
+                                 <tr><th>Tipo</th><th>Cantidad</th><th>Horas</th><th>Cursos</th></tr>
+                                 </thead><tbody>`;
+                    Object.keys(datosCompletos.resumenPorTipo[periodo]).forEach(tipo => {
+                        const t = datosCompletos.resumenPorTipo[periodo][tipo];
+                        html += `<tr><td>${tipo}</td><td>${t.cantidad}</td><td>${t.horas}</td><td>${t.cursos}</td></tr>`;
+                    });
+                    html += "</tbody></table>";
+                });
+        } else {
+            // Mostrar todos los períodos
+            Object.keys(datosCompletos.resumenPorTipo).forEach(periodo => {
+                html += `<h5 class="mt-3">${periodo}</h5>
+                             <table class="table table-bordered table-striped">
+                             <thead class="table-dark">
+                             <tr><th>Tipo</th><th>Cantidad</th><th>Horas</th><th>Cursos</th></tr>
+                             </thead><tbody>`;
+                Object.keys(datosCompletos.resumenPorTipo[periodo]).forEach(tipo => {
+                    const t = datosCompletos.resumenPorTipo[periodo][tipo];
+                    html += `<tr><td>${tipo}</td><td>${t.cantidad}</td><td>${t.horas}</td><td>${t.cursos}</td></tr>`;
+                });
+                html += "</tbody></table>";
+            });
+        }
+
+        document.getElementById("tablaTipos").innerHTML = html || '<p class="text-muted">No hay datos disponibles para el período seleccionado.</p>';
+    }
+
+    // ========== REPORTES ORIGINALES ==========
+
+    // Código de resumen de los informes mensuales
     google.script.run.withSuccessHandler(renderReporte).getReporteData();
 
     function renderReporte(data) {
         document.getElementById("tituloMes").innerText = data.mes + " " + data.año;
-
         let html = `
-      <p><strong style="color:#6f4e37;">&#128100; Publicadores</strong><br>  <!-- icono persona color café -->
-      Horas: ${data.tipos.Publicador.horas}<br>
-      Cursos: ${data.tipos.Publicador.cursos}</p>
-
-      <p><strong style="color:#1E90FF;">&#128188; Regulares</strong><br> <!-- icono maletín color azul -->
-      Horas: ${data.tipos.Regular.horas}<br>
-      Cursos: ${data.tipos.Regular.cursos}</p>
-
-      <p><strong style="color:#228B22;">&#128101;+ Auxiliares</strong><br> <!-- icono personas con + color verde -->
-      Horas: ${data.tipos.Auxiliar.horas}<br>
-      Cursos: ${data.tipos.Auxiliar.cursos}</p>
-      
-      <hr>
-      <p><strong style="color:#DAA520;">Total de los que SÍ participaron:</strong> <span style="color:#000;">${data.totalSi}</span></p>
-      <p><strong style="color:#A52A2A;">Total de los que NO participaron:</strong> <span style="color:#000;">${data.totalNo}</span></p>
-    `;
+                <p><strong style="color:#6f4e37;">&#128100; Publicadores</strong><br>
+                Cantidad: ${data.tipos.Publicador.cantidad}<br>
+                Horas: ${data.tipos.Publicador.horas}<br>
+                Cursos: ${data.tipos.Publicador.cursos}</p>
+                
+                <p><strong style="color:#1E90FF;">&#128188; Regulares</strong><br>
+                Cantidad: ${data.tipos.Regular.cantidad}<br>
+                Horas: ${data.tipos.Regular.horas}<br>
+                Cursos: ${data.tipos.Regular.cursos}</p>
+                
+                <p><strong style="color:#228B22;">&#128101;+ Auxiliares</strong><br>
+                Cantidad: ${data.tipos.Auxiliar.cantidad}<br>
+                Horas: ${data.tipos.Auxiliar.horas}<br>
+                Cursos: ${data.tipos.Auxiliar.cursos}</p>
+                
+                <hr>
+                <p><strong style="color:#DAA520;">Total de los que SÍ participaron:</strong> <span style="color:#000;">${data.totalSi}</span></p>
+                <p><strong style="color:#A52A2A;">Total de los que NO participaron:</strong> <span style="color:#000;">${data.totalNo}</span></p>
+            `;
         document.getElementById("reporte").innerHTML = html;
     }
-</script>
 
-
-<script>
     // Crear tabla con ID única para DataTables
     function crearTabla(titulo, encabezados, filas, id) {
-        let html = `<h2>${titulo}</h2><table id="${id}" class="display"><thead><tr>`;
+        let html = `<h3>${titulo}</h3><table id="${id}" class="display table table-striped"><thead><tr>`;
         encabezados.forEach(enc => html += `<th>${enc}</th>`);
         html += `</tr></thead><tbody>`;
         filas.forEach(fila => {
@@ -96,7 +518,7 @@
         let tablaIndex = 0;
 
         Object.keys(reporte).forEach(año => {
-            html += `<h2>📅 Reporte del año ${año}</h2>`;
+            html += `<h2 class="mt-4">📅 Reporte del año ${año}</h2>`;
 
             // Tabla de personas sin cursos bíblicos
             const sinCursos = reporte[año].sinCursos.map(p => ({

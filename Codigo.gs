@@ -317,6 +317,9 @@ function dashboard() {
   return HtmlService.createHtmlOutputFromFile('dashboard').getContent();
 }
 
+// Este es reporte mensual
+
+// Este es reporte mensual
 
 function getReporteData() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -338,9 +341,9 @@ function getReporteData() {
     mes: "",
     año: "",
     tipos: {
-      Publicador: { horas: 0, cursos: 0 },
-      Regular: { horas: 0, cursos: 0 },
-      Auxiliar: { horas: 0, cursos: 0 }
+      Publicador: { cantidad: 0, horas: 0, cursos: 0 },
+      Regular: { cantidad: 0, horas: 0, cursos: 0 },
+      Auxiliar: { cantidad: 0, horas: 0, cursos: 0 }
     },
     totalSi: 0,
     totalNo: 0
@@ -358,6 +361,7 @@ function getReporteData() {
     if (participo === "Si") {
       resumen.totalSi++;
       if (resumen.tipos[tipo]) {
+        resumen.tipos[tipo].cantidad++; // ✅ contar personas por tipo
         resumen.tipos[tipo].horas += horas;
         resumen.tipos[tipo].cursos += cursos;
       }
@@ -368,6 +372,7 @@ function getReporteData() {
   
   return resumen;
 }
+
 
 
 // Reporte por año 
@@ -427,6 +432,154 @@ function getReportePorAnio() {
 
 
 
+// Funcion para reporte por tipo mensual
+
+function getParticipacionPorMes() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+
+  const idx = {
+    mes: headers.indexOf("mes"),
+    año: headers.indexOf("año"),
+    participo: headers.indexOf("participo")
+  };
+
+  let resumen = {};
+
+  data.forEach(row => {
+    const mes = row[idx.mes];
+    const año = row[idx.año];
+    const key = `${mes}-${año}`;
+    if (!resumen[key]) resumen[key] = { mes, año, si: 0, no: 0 };
+
+    if (row[idx.participo] === "Si") {
+      resumen[key].si++;
+    } else {
+      resumen[key].no++;
+    }
+  });
+
+  return Object.values(resumen);
+}
+
+// Funcion cursos por mes para los cursos biblicos
+
+function getCursosPorGrupo() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+
+  const idx = {
+    grupo: headers.indexOf("grupo"),
+    cursos: headers.indexOf("cursos"),
+    mes: headers.indexOf("mes"),
+    año: headers.indexOf("año")
+  };
+
+  let resumen = {};
+
+  data.forEach(row => {
+    const key = `${row[idx.mes]}-${row[idx.año]}`;
+    if (!resumen[key]) resumen[key] = {};
+    if (!resumen[key][row[idx.grupo]]) resumen[key][row[idx.grupo]] = 0;
+    resumen[key][row[idx.grupo]] += Number(row[idx.cursos]) || 0;
+  });
+
+  return resumen; // { "Abril-2025": { "Grupo 1": 5, "Grupo 2": 3 } ... }
+}
+
+// Funcion para resumir por grupo los que dan cursos osea la cantidad de personas que dan cursos
+
+// Función para contar PERSONAS con cursos por grupo (no suma de cursos)
+function getPersonasConCursosPorGrupo() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  
+  const idx = {
+    nombre: headers.indexOf("nombre"),
+    grupo: headers.indexOf("grupo"),
+    cursos: headers.indexOf("cursos"),
+    mes: headers.indexOf("mes"),
+    año: headers.indexOf("año")
+  };
+  
+  let resumen = {};
+  
+  data.forEach(row => {
+    const key = `${row[idx.mes]}-${row[idx.año]}`;
+    const nombre = row[idx.nombre];
+    const grupo = row[idx.grupo];
+    const cursos = Number(row[idx.cursos]) || 0;
+    
+    // Solo contar si la persona reportó al menos 1 curso
+    if (cursos > 0) {
+      if (!resumen[key]) resumen[key] = {};
+      if (!resumen[key][grupo]) resumen[key][grupo] = new Set();
+      
+      // Usar Set para evitar contar la misma persona dos veces
+      resumen[key][grupo].add(nombre);
+    }
+  });
+  
+  // Convertir Sets a números (cantidad de personas únicas)
+  let resultado = {};
+  Object.keys(resumen).forEach(periodo => {
+    resultado[periodo] = {};
+    Object.keys(resumen[periodo]).forEach(grupo => {
+      resultado[periodo][grupo] = resumen[periodo][grupo].size;
+    });
+  });
+  
+  return resultado; 
+  // Ejemplo: { "Abril-2025": { "Grupo 1": 5, "Grupo 2": 8 } }
+  // Significa: En Abril-2025, 5 personas del Grupo 1 reportaron cursos
+}
+
+
+
+// Funcion para lo que es resumen mensual de los tipos
+
+function getResumenPorTipo() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+
+  const idx = {
+    tipo: headers.indexOf("tipo"),
+    mes: headers.indexOf("mes"),
+    año: headers.indexOf("año"),
+    hora: headers.indexOf("hora"),
+    cursos: headers.indexOf("cursos")
+  };
+
+  let resumen = {};
+
+  data.forEach(row => {
+    const key = `${row[idx.mes]}-${row[idx.año]}`;
+    if (!resumen[key]) {
+      resumen[key] = {
+        Publicador: { cantidad: 0, horas: 0, cursos: 0 },
+        Regular: { cantidad: 0, horas: 0, cursos: 0 },
+        Auxiliar: { cantidad: 0, horas: 0, cursos: 0 }
+      };
+    }
+    const tipo = row[idx.tipo];
+    if (resumen[key][tipo]) {
+      resumen[key][tipo].cantidad++;
+      resumen[key][tipo].horas += Number(row[idx.hora]) || 0;
+      resumen[key][tipo].cursos += Number(row[idx.cursos]) || 0;
+    }
+  });
+
+  return resumen;
+}
+
 
 
 
@@ -458,7 +611,7 @@ function editRespaldo(id, newData) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME6);
 
-  sheet.getRange(id, 2, 1, 9).setValues([[
+  sheet.getRange(id, 1, 1, 9).setValues([[
     newData.nombre,
     newData.tipo,
     newData.mes,
