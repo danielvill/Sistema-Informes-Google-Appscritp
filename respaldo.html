@@ -73,7 +73,7 @@
                         <input type="hidden" id="edit_id">
                         <div class="mb-2">
                             <label for="">Nombre</label>
-                            <input class="form-control" id="edit_nombre" >
+                            <input class="form-control" id="edit_nombre">
                         </div>
                         <div class="mb-2">
                             <label>Tipo</label>
@@ -215,7 +215,7 @@
         window.editar = function (id) {
             const registro = dataSet.find(r => String(r.id) === String(id));
             const modalEl = document.getElementById('editModalRespaldo'); // ✅ Aquí defines modalEl
-            
+
             if (registro && modalEl) {
                 $('#edit_id').val(registro.id);
                 $('#edit_nombre').val(registro.nombre);

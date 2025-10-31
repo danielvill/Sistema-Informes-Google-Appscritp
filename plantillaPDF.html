@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+        }
+
+        .title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .personal-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-right {
+            margin-left: 40px;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* dos columnas iguales */
+            gap: 8px 20px;
+            /* espacio entre filas y columnas */
+        }
+
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .service-types {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid black;
+            margin-top: 10px;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .main-table th {
+            background-color: white;
+            font-weight: bold;
+        }
+
+        .month-column {
+            text-align: left;
+            padding-left: 10px;
+            width: 80px;
+        }
+
+        .participation-column {
+            width: 90px;
+        }
+
+        .courses-column {
+            width: 70px;
+        }
+
+        .precursor-column {
+            width: 70px;
+        }
+
+        .hours-column {
+            width: 120px;
+        }
+
+        .notes-column {
+            width: 150px;
+        }
+
+        .total-row {
+            font-weight: bold;
+        }
+
+        input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            margin: 0;
+        }
+
+        .underline {
+            border-bottom: 1px solid black;
+            min-width: 200px;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .header-text {
+            font-size: 11px;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <? var pub = publicador; ?>
+    <? var registrosPorAño = {}; registros.forEach(r => { if(!registrosPorAño[r.año]) registrosPorAño[r.año]=[]; registrosPorAño[r.año].push(r); }); ?>
+
+    <? for (var año in registrosPorAño) { 
+         var total=0; ?>
+    <div class="form-container formato-s21" data-año="<?= año ?>">
+        <div class="title">REGISTRO DE PUBLICADOR DE LA CONGREGACIÓN</div>
+
+        <div class="personal-info">
+            <div class="info-left">
+                <div class="info-row"><strong>Nombre:</strong>
+                    <?= pub.nombre ?>
+                </div>
+                <div class="info-row"><strong>Fecha de nacimiento:</strong>
+                    <?= pub.fecha_n ?>
+                </div>
+                <div class="info-row"><strong>Fecha de bautismo:</strong>
+                    <?= pub.fecha_b ?>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="two-columns">
+                    <div class="checkbox-group"><input type="checkbox" <?=pub.sexo=="Hombre" ?"checked":"" ?>> Hombre
+                    </div>
+                    <div class="checkbox-group"><input type="checkbox" <?=pub.sexo=="Mujer" ?"checked":"" ?>> Mujer
+                    </div>
+                    <div class="checkbox-group"><input type="checkbox" <?=pub.condicion=="Otras ovejas" ?"checked":""
+                            ?>> Otras ovejas</div>
+                    <div class="checkbox-group"><input type="checkbox" <?=pub.condicion=="Ungido" ?"checked":"" ?>>
+                        Ungido</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="service-types">
+            <div class="checkbox-group"><input type="checkbox" <?=pub.anciano?"checked":"" ?>> Anciano</div>
+            <div class="checkbox-group"><input type="checkbox" <?=pub.siervo?"checked":"" ?>> Siervo ministerial</div>
+            <div class="checkbox-group"><input type="checkbox" <?=pub.regular?"checked":"" ?>> Precursor regular</div>
+            <div class="checkbox-group"><input type="checkbox" <?=pub.especial?"checked":"" ?>> Precursor especial</div>
+            <div class="checkbox-group"><input type="checkbox" <?=pub.misionero?"checked":"" ?>> Misionero</div>
+        </div>
+
+        <table class="main-table">
+            <thead>
+                <tr>
+                    <th class="month-column">Año de servicio
+                        <?= año ?>
+                    </th>
+                    <th class="participation-column">Participación en el ministerio</th>
+                    <th class="courses-column">Cursos bíblicos</th>
+                    <th class="precursor-column">Precursor auxiliar.</th>
+                    <th class="hours-column">Horas (Si es precursor o
+                        misionero que
+                        sirve en el campo)</th>
+                    <th class="notes-column">Notas</th>
+                </tr>
+            </thead>
+            <tbody>
+                <? registrosPorAño[año].forEach(function(r){ total+=Number(r.hora)||0; ?>
+                <tr>
+                    <td class="month-column">
+                        <?= r.mes ?>
+                    </td>
+                    <td class="participation-column"><input type="checkbox" <?=r.participo=="Si" ?"checked":"" ?>></td>
+                    <td class="courses-column">
+                        <?= r.cursos||"" ?>
+                    </td>
+                    <td class="precursor-column"><input type="checkbox" <?=r.tipo=="Auxiliar" ?"checked":"" ?>></td>
+                    <td class="hours-column">
+                        <?= r.hora||"" ?>
+                    </td>
+                    <td class="notes-column">
+                        <?= r.comentario||"" ?>
+                    </td>
+                </tr>
+                <? }); ?>
+                <tr class="total-row">
+                    <td colspan="4"></td>
+                    <td><strong>Total:
+                            <?= total ?>
+                        </strong></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <? } ?>
+</body>
+
+</html>

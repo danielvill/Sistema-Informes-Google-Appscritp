@@ -124,6 +124,25 @@
             </div>
         </div>
 
+        <!-- Mostrar quienes no participaron eso sera por medio de una tabla  👇 -->
+        <div id="tablaNoParticipantes" style="margin-top:20px;">
+            <h4>Hermanos que no participaron en alguna faceta del ministerio</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Grupo</th>
+                        <th>Mes</th>
+                        <th>Año</th>
+                        <th>Comentario</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyNoParticipantes"></tbody>
+            </table>
+        </div>
+
+
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">📊 Resumen por Tipo</h5>
@@ -242,6 +261,11 @@
         actualizarTablaTipos(ano, mes);
 
         actualizarGraficoPersonasCursos(ano, mes); // 👈 aquí
+
+        // 👇 Aquí la llamada correcta
+        google.script.run.withSuccessHandler(function (data) {
+            renderNoParticipantes(data);
+        }).getNoParticipantes(ano, mes);
     }
 
     function actualizarGraficoCursos(ano, mes) {
@@ -468,6 +492,31 @@
 
         document.getElementById("tablaTipos").innerHTML = html || '<p class="text-muted">No hay datos disponibles para el período seleccionado.</p>';
     }
+
+
+    // Funcion para renderizar la tabla de no participantes nueva tabla
+    function renderNoParticipantes(data) {
+        const tbody = document.getElementById("tbodyNoParticipantes");
+        tbody.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No hay registros</td></tr>";
+            return;
+        }
+
+        data.forEach(function (r) {
+            const tr = document.createElement("tr");
+            tr.innerHTML =
+                "<td>" + (r.nombre || "N/A") + "</td>" +
+                "<td>" + (r.tipo || "N/A") + "</td>" +
+                "<td>" + (r.grupo || "N/A") + "</td>" +
+                "<td>" + (r.mes || "N/A") + "</td>" +
+                "<td>" + (r.ano || "N/A") + "</td>" +
+                "<td>" + (r.comentario || "-") + "</td>";
+            tbody.appendChild(tr);
+        });
+    }
+
 
     // ========== REPORTES ORIGINALES ==========
 

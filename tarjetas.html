@@ -1,0 +1,534 @@
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+    }
+
+    .title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+    }
+
+    .personal-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .info-right {
+        margin-left: 40px;
+    }
+
+    .two-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* dos columnas iguales */
+        gap: 8px 20px;
+        /* espacio entre filas y columnas */
+    }
+
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .service-types {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+
+    .main-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 2px solid black;
+        margin-top: 10px;
+    }
+
+    .main-table th,
+    .main-table td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .main-table th {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    .month-column {
+        text-align: left;
+        padding-left: 10px;
+        width: 80px;
+    }
+
+    .participation-column {
+        width: 90px;
+    }
+
+    .courses-column {
+        width: 70px;
+    }
+
+    .precursor-column {
+        width: 70px;
+    }
+
+    .hours-column {
+        width: 120px;
+    }
+
+    .notes-column {
+        width: 150px;
+    }
+
+    .total-row {
+        font-weight: bold;
+    }
+
+    input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+    }
+
+    .underline {
+        border-bottom: 1px solid black;
+        min-width: 200px;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .header-text {
+        font-size: 11px;
+        text-align: center;
+        padding: 5px;
+    }
+</style>
+
+<div class="container my-3">
+
+
+    <h2>Lista de Publicadores</h2>
+    <div class="mb-3">
+        <label for="inputAño">Año:</label>
+        <input type="number" id="inputAño" class="form-control" placeholder="Ingresa un año para la descarga ejemplo:2023">
+    </div>
+
+    <button id="btnDescargar" class="btn btn-primary">Descargar PDFs</button>
+
+    <div class="progress mt-3">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+    </div>
+
+
+    <div id="lista">
+        <table id="tablaPublicadores" class="display">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Grupo</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+<div id="detalle" style="display:none;">
+
+    <div id="filtroContenedor" style="margin-bottom: 20px;" class="container my-3">
+        <label for="filtroAño"><strong>Filtrar por año:</strong></label>
+        <select id="filtroAño">
+            <option value="todos">Todos</option>
+        </select>
+        <button id="btnImprimir">Imprimir año seleccionado</button>
+    </div>
+    <div id="contenedorFormatos"></div>
+
+</div>
+
+
+<script>
+    // Este es para descargar los pdf eso tomar en cuenta 
+    document.getElementById("btnDescargar").addEventListener("click", () => {
+        const año = document.getElementById("inputAño").value;
+        if (!año) {
+            alert("Por favor ingresa un año");
+            return;
+        }
+        google.script.run
+            .withSuccessHandler(actualizarProgreso)
+            .iniciarDescarga(año);
+    });
+
+    function actualizarProgreso(info) {
+        const bar = document.getElementById("progressBar");
+        bar.style.width = info.porcentaje + "%";
+        bar.textContent = info.porcentaje + "%";
+        if (info.finalizado) {
+            alert("Descarga completada");
+        } else {
+            // seguir llamando hasta terminar
+            google.script.run
+                .withSuccessHandler(actualizarProgreso)
+                .continuarDescarga();
+        }
+    }
+</script>
+
+<script>
+    // Cargar lista de publicadores
+    google.script.run.withSuccessHandler(renderTabla).getPubli();
+
+    function renderTabla(data) {
+        const tbody = document.querySelector("#tablaPublicadores tbody");
+        tbody.innerHTML = "";
+        data.forEach(pub => {
+            const tr = document.createElement("tr");
+            // Nombre como enlace azul
+            tr.innerHTML = `
+        <td><a href="#" class="link-nombre">${pub.nombre}</a></td>
+        <td>${pub.grupo}</td>
+        <td>${pub.tipo}</td>`;
+            tr.querySelector("a").onclick = (e) => {
+                e.preventDefault();
+                verDetalle(pub.nombre);
+            };
+            tbody.appendChild(tr);
+        });
+
+        // Inicializar DataTable
+        $('#tablaPublicadores').DataTable();
+    }
+
+    function verDetalle(nombre) {
+        google.script.run.withSuccessHandler(renderDetalle).getDetallePublicador(nombre);
+    }
+
+    function renderDetalle(data) {
+        if (!data) {
+            document.getElementById("detalle").innerHTML = "<p>No encontrado</p>";
+            return;
+        }
+
+
+        // Agrupar registros por año
+        const registrosPorAño = {};
+        data.registros.forEach(r => {
+            const año = r.año;
+            if (!registrosPorAño[año]) registrosPorAño[año] = [];
+            registrosPorAño[año].push(r);
+        });
+
+        // Construir tabla de registros
+        let filas = "";
+        let totalHoras = 0;
+        data.registros.forEach(r => {
+            totalHoras += Number(r.hora) || 0;
+            filas += `
+        <tr>
+          <td class="month-column">${r.mes}</td>
+          <td class="participation-column"><input type="checkbox" ${r.participo === "Si" ? "checked" : ""}></td>
+          <td class="courses-column">${r.cursos || ""}</td>
+          <td class="precursor-column"><input type="checkbox" ${r.tipo === "Auxiliar" ? "checked" : ""}></td>
+          <td class="hours-column">${r.hora || ""}</td>
+          <td class="notes-column">${r.comentario || ""}</td>
+        </tr>`;
+        });
+
+        // Tomar el año del primer registro
+        let año = data.registros.length > 0 ? data.registros[0].año : "";
+
+
+        // Limpiar y llenar el filtro de años
+        const filtro = document.getElementById("filtroAño");
+        filtro.innerHTML = '<option value="todos">Todos</option>';
+        Object.keys(registrosPorAño).forEach(a => {
+            const option = document.createElement("option");
+            option.value = a;
+            option.textContent = a;
+            filtro.appendChild(option);
+        });
+
+        // Renderizar formato S-21
+        let html = "";
+
+        for (const año in registrosPorAño) {
+            let filas = "";
+            let totalHoras = 0;
+            registrosPorAño[año].forEach(r => {
+                totalHoras += Number(r.hora) || 0;
+                filas += `
+        <tr>
+          <td class="month-column">${r.mes}</td>
+          <td class="participation-column"><input type="checkbox" ${r.participo === "Si" ? "checked" : ""}></td>
+          <td class="courses-column">${r.cursos || ""}</td>
+          <td class="precursor-column"><input type="checkbox" ${r.tipo === "Auxiliar" ? "checked" : ""}></td>
+          <td class="hours-column">${r.hora || ""}</td>
+          <td class="notes-column">${r.comentario || ""}</td>
+        </tr>`;
+            });
+
+            html += `
+    <div class="form-container formato-s21" data-año="${año}" id="formato-${año}">
+      <div class="title">REGISTRO DE PUBLICADOR DE LA CONGREGACIÓN</div>
+      <div class="personal-info">
+        <div class="info-left">
+          <div class="info-row"><strong>Nombre:</strong> ${data.publicador.nombre}</div>
+          <div class="info-row"><strong>Fecha de nacimiento:</strong> ${data.publicador.fecha_n}</div>
+          <div class="info-row"><strong>Fecha de bautismo:</strong> ${data.publicador.fecha_b}</div>
+        </div>
+        <div class="info-right">
+          <div class="two-columns">
+            <div class="checkbox-group"><input type="checkbox" ${data.publicador.sexo == "Hombre" ? "checked" : ""}> Hombre</div>
+            <div class="checkbox-group"><input type="checkbox" ${data.publicador.sexo == "Mujer" ? "checked" : ""}> Mujer</div>
+            <div class="checkbox-group"><input type="checkbox" ${data.publicador.condicion == "Otras ovejas" ? "checked" : ""}> Otras ovejas</div>
+            <div class="checkbox-group"><input type="checkbox" ${data.publicador.condicion == "Ungido" ? "checked" : ""}> Ungido</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-types">
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.anciano ? "checked" : ""}> Anciano</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.siervo ? "checked" : ""}> Siervo ministerial</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.regular ? "checked" : ""}> Precursor regular</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.especial ? "checked" : ""}> Precursor especial</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.misionero ? "checked" : ""}> Misionero</div>
+      </div>
+
+      <table class="main-table">
+        <thead>
+          <tr>
+            <th class="month-column">Año de servicio ${año}</th>
+            <th class="participation-column">Participación en el ministerio</th>
+            <th class="courses-column">Cursos bíblicos</th>
+            <th class="precursor-column">Precursor auxiliar.</th>
+            <th class="hours-column">Horas (Si es precursor o
+ misionero que
+ sirve en el campo)</th>
+            <th class="notes-column">Notas</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filas}
+          <tr class="total-row">
+            <td colspan="4"></td>
+            <td><strong>Total: ${totalHoras}</strong></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+        }
+
+
+
+        // Mostrar detalle
+        document.getElementById("lista").style.display = "none";
+        document.getElementById("detalle").style.display = "block";
+        document.getElementById("contenedorFormatos").innerHTML = html;
+    }
+
+    document.getElementById("filtroAño").addEventListener("change", function () {
+        const añoSeleccionado = this.value;
+        const bloques = document.querySelectorAll(".formato-s21");
+        bloques.forEach(b => {
+            if (añoSeleccionado === "todos" || b.dataset.año === añoSeleccionado) {
+                b.style.display = "block";
+            } else {
+                b.style.display = "none";
+            }
+        });
+    });
+
+
+    // Imprimir año seleccionado
+    function imprimirAño() {
+        const año = document.getElementById("filtroAño").value;
+        if (año === "todos") {
+            alert("Selecciona un año específico para imprimir.");
+            return;
+        }
+
+        const bloque = document.getElementById(`formato-${año}`);
+        if (!bloque) {
+            alert("No se encontró el formato para ese año.");
+            return;
+        }
+
+        const ventana = window.open("", "_blank");
+        ventana.document.write(`
+      <html>
+        <head>
+          <title>Formato S-21 - ${año}</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+    }
+
+    .title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+    }
+
+    .personal-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .info-right {
+        margin-left: 40px;
+    }
+
+    .two-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* dos columnas iguales */
+        gap: 8px 20px;
+        /* espacio entre filas y columnas */
+    }
+
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .service-types {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+
+    .main-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 2px solid black;
+        margin-top: 10px;
+    }
+
+    .main-table th,
+    .main-table td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .main-table th {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    .month-column {
+        text-align: left;
+        padding-left: 10px;
+        width: 80px;
+    }
+
+    .participation-column {
+        width: 90px;
+    }
+
+    .courses-column {
+        width: 70px;
+    }
+
+    .precursor-column {
+        width: 70px;
+    }
+
+    .hours-column {
+        width: 120px;
+    }
+
+    .notes-column {
+        width: 150px;
+    }
+
+    .total-row {
+        font-weight: bold;
+    }
+
+    input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+    }
+
+    .underline {
+        border-bottom: 1px solid black;
+        min-width: 200px;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .header-text {
+        font-size: 11px;
+        text-align: center;
+        padding: 5px;
+    }
+          </style>
+        </head>
+        <body>
+          ${bloque.innerHTML}
+        </body>
+      </html>
+    `);
+        ventana.document.close();
+        ventana.print();
+    }
+
+    document.getElementById("btnImprimir").addEventListener("click", imprimirAño);
+
+
+    function volver() {
+        document.getElementById("detalle").style.display = "none";
+        document.getElementById("lista").style.display = "block";
+    }
+</script>

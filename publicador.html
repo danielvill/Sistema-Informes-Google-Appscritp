@@ -39,26 +39,34 @@
 
 
 
-<div class="container">
+<div class="container my-3">
     <br>
     <div class="d-flex justify-content-between mb-3">
         <button class="btn btn-success" onclick="abrirModalNuevo()">➕ Añadir Publicador</button>
     </div>
 
+
     <h2 class="mb-4">​👨‍👨‍👦‍👦​ Publicadores</h2>
-    <table id="tabla" class="display table table-striped" style="width:100%">
-        <thead>
-            <tr>
-                <th>id_codigo</th>
-                <th>nombre</th>
-                <th>grupo</th>
-                <th>tipo</th>
-                <th>comentario</th>
-                <th>acciones</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+
+    <div class="row mb-3">
+        <div class="col-6">
+            <input type="text" id="filtroNombre" class="form-control" placeholder="Filtrar por nombre">
+        </div>
+        <div class="col-6">
+            <input type="text" id="filtroGrupo" class="form-control" placeholder="Filtrar por grupo">
+        </div>
+        <div class="col-6">
+            <input type="text" id="filtroTipo" class="form-control" placeholder="Coloque: Publicador,Auxiliar,Regular">
+        </div>
+        <div class="col-6">
+            <input type="text" id="filtroComentario" class="form-control" placeholder="Coloque cualquier comentario">
+        </div>
+       
+
+    </div>
+    <!-- Contenedor de cards -->
+    <div id="cardsContainer" class="row g-3"></div>
+
 </div>
 
 
@@ -110,6 +118,64 @@
                             <option value="Publicador">Publicador</option>
                             <option value="Regular">Regular</option>
                             <option value="Auxiliar">Auxiliar</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="">Ingrese Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="add_fecha_n">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese Fecha de bautismo</label>
+                        <input type="date" class="form-control" id="add_fecha_b">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese el Sexo</label>
+                        <select class="form-control" id="add_sexo">
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese Condicion</label>
+                        <select class="form-control" id="add_condicion">
+                            <option value="Ungido">Ungido</option>
+                            <option value="Otras ovejas">Otras ovejas</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese si es Siervo ministerial</label>
+                        <select class="form-control" id="add_siervo">
+                            <option value="Siervo ministerial">Siervo ministerial</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese si es Precursor Regular</label>
+                        <select class="form-control" id="add_regular">
+                            <option value="Precursor Regular">Precursor Regular</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese si es Anciano</label>
+                        <select class="form-control" id="add_anciano">
+                            <option value="Anciano">Anciano</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese si es Precursor especial</label>
+                        <select class="form-control" id="add_especial">
+                            <option value="Precursor especial">Precursor especial</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese si es Misionero que sirve en el campo</label>
+                        <select class="form-control" id="add_misionero">
+                            <option value="Misionero que sirve en el campo">Misionero que sirve en el campo</option>
+                            <option value=" ">Nada</option>
                         </select>
                     </div>
                     <div class="mb-2">
@@ -175,6 +241,63 @@
                         </select>
                     </div>
                     <div class="mb-2">
+                        <label for="">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="edit_fecha_n">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Fecha de bautismo</label>
+                        <input type="date" class="form-control" id="edit_fecha_b">
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Ingrese el Sexo</label>
+                        <select class="form-control" id="edit_sexo">
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Condicion</label>
+                        <select class="form-control" id="edit_condicion">
+                            <option value="Ungido">Ungido</option>
+                            <option value="Otras ovejas">Otras ovejas</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Privilegio</label>
+                        <select class="form-control" id="edit_siervo">
+                            <option value="Siervo ministerial">Siervo ministerial</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Privilegio</label>
+                        <select class="form-control" id="edit_regular">
+                            <option value="Precursor Regular">Precursor Regular</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Privilegio</label>
+                        <select class="form-control" id="edit_anciano">
+                            <option value="Anciano">Anciano</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Privilegio</label>
+                        <select class="form-control" id="edit_especial">
+                            <option value="Precursor especial">Precursor especial</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="">Privilegio</label>
+                        <select class="form-control" id="edit_misionero">
+                            <option value="Misionero que sirve en el campo">Misionero que sirve en el campo</option>
+                            <option value=" ">Nada</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
                         <label for="">Comentario</label>
                         <input class="form-control" id="edit_comentario">
                     </div>
@@ -190,9 +313,9 @@
 
 
 <script>
-    let tabla;
+
     let dataSet = [];
-    
+
     // Funcion de animacion para lo que es la carga
     function mostrarLoader() {
         document.getElementById('loader').style.display = 'flex';
@@ -202,36 +325,68 @@
         document.getElementById('loader').style.display = 'none';
     }
 
+
+    // Renderizar cards
+    function renderCards() {
+        mostrarLoader(); // Mostrar animación
+        ocultarLoader(); // Ocultar animación
+        const contenedor = document.getElementById("cardsContainer");
+        contenedor.innerHTML = "";
+
+        const filtroNombre = document.getElementById("filtroNombre").value.toLowerCase();
+        const filtroGrupo = document.getElementById("filtroGrupo").value.toLowerCase();
+        const filtroTipo = document.getElementById("filtroTipo").value.toLowerCase();
+        const filtroComentario = document.getElementById("filtroComentario").value.toLowerCase();
+
+        const filtrados = dataSet.filter(r =>
+            (r.nombre?.toLowerCase() || "").includes(filtroNombre) &&
+            (r.grupo?.toLowerCase() || "").includes(filtroGrupo) &&
+            (r.tipo?.toLowerCase() || "").includes(filtroTipo) &&
+            (r.comentario?.toLowerCase() || "").includes(filtroComentario)
+        );
+
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<div class="col-12"><div class="alert alert-warning">No hay resultados</div></div>`;
+            return;
+        }
+
+        filtrados.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "col-12 col-md-6 col-lg-4";
+            card.innerHTML = `
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">${r.id_codigo}</h5>
+            <p class="card-text mb-1"><strong>Nombre:</strong> ${r.nombre}</p>            
+            <p class="card-text mb-1"><strong>Grupo:</strong> ${r.grupo}</p>
+            <p class="card-text mb-1"><strong>Tipo:</strong> ${r.tipo} </p>
+            <p class="card-text mb-1"><strong>Fecha de nacimiento:</strong> ${r.fecha_n || "—"}</p>
+            <p class="card-text mb-1"><strong>Fecha de baustimo:</strong> ${r.fecha_b || "—"}</p>
+            <p class="card-text mb-1"><strong>Sexo:</strong> ${r.sexo}</p>
+            <p class="card-text mb-1"><strong>Condicion:</strong> ${r.condicion}</p>
+            <p class="card-text mb-1"><strong>Privilegio:</strong> ${r.siervo}</p>
+            <p class="card-text mb-1"><strong>Privilegio:</strong> ${r.regular}</p>
+            <p class="card-text mb-1"><strong>Privilegio:</strong> ${r.especial}</p>
+            <p class="card-text mb-1"><strong>Privilegio:</strong> ${r.misionero}</p>
+            <p class="card-text"><strong>Comentario:</strong> ${r.comentario}</p>
+            <div class="d-flex justify-content-end gap-2">
+              <button class="btn btn-sm btn-warning btn-lg w-100" onclick="editar('${r.id_codigo}')">✏️</button>
+              <button class="btn btn-sm btn-danger btn-lg w-100" onclick="eliminar('${r.id_codigo}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+            contenedor.appendChild(card);
+        });
+    }
+
+
     // Cargar datos
     function cargarDatos() {
-        mostrarLoader(); // Mostrar animación
-
         google.script.run.withSuccessHandler(function (data) {
-            dataSet = data;
-            if (tabla) {
-                tabla.clear().rows.add(dataSet).draw();
-            } else {
-                tabla = $('#tabla').DataTable({
-                    data: dataSet,
-                    columns: [
-                        { data: 'id_codigo' },
-                        { data: 'nombre', defaultContent: '' },
-                        { data: 'grupo', defaultContent: '' },
-                        { data: 'tipo', defaultContent: '' },
-                        { data: 'comentario', defaultContent: '' },
-                        {
-                            data: null,
-                            render: function (row) {
-                                return `
-                    <button class="btn btn-sm btn-warning btn-lg w-100" onclick="editar('${row.id_codigo}')">✏️</button>
-                    <button class="btn btn-sm btn-danger btn-lg w-100" onclick="eliminar('${row.id_codigo}')">🗑️</button>
-                  `;
-                            }
-                        }
-                    ]
-                });
-            }
-             ocultarLoader(); // Ocultar animación
+            dataSet = Array.isArray(data) ? data : [];
+            renderCards();
         }).getPublicadores();
     }
 
@@ -248,6 +403,15 @@
             nombre: $('#add_nombre').val(),
             grupo: $('#add_grupo').val(),
             tipo: $('#add_tipo').val(),
+            fecha_n: $('#add_fecha_n').val(),
+            fecha_b: $('#add_fecha_b').val(),
+            sexo: $('#add_sexo').val(),
+            condicion: $('#add_condicion').val(),
+            siervo: $('#add_siervo').val(),
+            regular: $('#add_regular').val(),
+            anciano: $('#add_anciano').val(),
+            especial: $('#add_especial').val(),
+            misionero: $('#add_misionero').val(),
             comentario: $('#add_comentario').val()
         };
 
@@ -271,6 +435,15 @@
             $('#edit_nombre').val(registro.nombre);
             $('#edit_grupo').val(registro.grupo);
             $('#edit_tipo').val(registro.tipo);
+            $('#edit_fecha_n').val(registro.fecha_n);
+            $('#edit_fecha_b').val(registro.fecha_b);
+            $('#edit_sexo').val(registro.sexo);
+            $('#edit_condicion').val(registro.condicion);
+            $('#edit_siervo').val(registro.siervo);
+            $('#edit_regular').val(registro.regular);
+            $('#edit_anciano').val(registro.anciano);
+            $('#edit_especial').val(registro.especial);
+            $('#edit_misionero').val(registro.misionero);
             $('#edit_comentario').val(registro.comentario);
 
             const modal = new bootstrap.Modal(modalEl);
@@ -287,6 +460,15 @@
             nombre: $('#edit_nombre').val(),
             grupo: $('#edit_grupo').val(),
             tipo: $('#edit_tipo').val(),
+            fecha_n: $('#edit_fecha_n').val(),
+            fecha_b: $('#edit_fecha_b').val(),
+            sexo: $('#edit_sexo').val(),
+            condicion: $('#edit_condicion').val(),
+            siervo: $('#edit_siervo').val(),
+            regular: $('#edit_regular').val(),
+            anciano: $('#edit_anciano').val(),
+            especial: $('#edit_especial').val(),
+            misionero: $('#edit_misionero').val(),
             comentario: $('#edit_comentario').val()
         };
         google.script.run.withSuccessHandler(function (msg) {
@@ -305,6 +487,11 @@
             }).deletePublicador(id);
         }
     }
+    // Eventos de filtro
+    document.getElementById("filtroNombre").addEventListener("input", renderCards);
+    document.getElementById("filtroGrupo").addEventListener("input", renderCards);
+    document.getElementById("filtroTipo").addEventListener("input", renderCards);
+    document.getElementById("filtroComentario").addEventListener("input", renderCards);
     // Inicializar tabla al cargar la vista
     cargarDatos();
 </script>
