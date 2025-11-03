@@ -2,7 +2,7 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle("Login")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    
+
 }
 
 // Estas son variables para todo el codigo si son para el editar y eliminar y el agregar
@@ -93,7 +93,7 @@ function editInforme(nombre, newData) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] == nombre) {
-      sheet.getRange(i+1, 2, 1, 8).setValues([[
+      sheet.getRange(i + 1, 2, 1, 8).setValues([[
         newData.tipo,
         newData.mes,
         newData.participo,
@@ -117,7 +117,7 @@ function deleteInforme(nombre) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] == nombre) {
-      sheet.deleteRow(i+1);
+      sheet.deleteRow(i + 1);
       return "Registro eliminado";
     }
   }
@@ -148,91 +148,6 @@ function getFaltantes() {
 
 
 
-// inactivos
-function inactivo() {
-  return HtmlService.createHtmlOutputFromFile('inactivo').getContent();
-}
-
-
-
-// Obtener todos los inactivos
-// Obtener registros de inactivos
-function getInactivo() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(SHEET_NAME5);
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const rows = data.slice(1);
-
-  return rows.map(r => {
-    let obj = {};
-    headers.forEach((h, i) => {
-      if (h === "fecha" && r[i] instanceof Date) {
-        obj[h] = Utilities.formatDate(r[i], Session.getScriptTimeZone(), "yyyy-MM-dd");
-      } else {
-        obj[h] = r[i];
-      }
-    });
-    return obj;
-  });
-}
-
-// Agregar
-function addInactivo(record) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(SHEET_NAME5);
-  
-
-  sheet.appendRow([
-    record.id_codigo,
-    record.nombre,
-    record.fecha || "", // string ISO o vacío
-    record.comentario
-  ]);
-  return "Registro agregado";
-}
-
-// Editar
-function editInactivo(id_codigo, newData) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(SHEET_NAME5);
-  const data = sheet.getDataRange().getValues();
-  
-  
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == id_codigo) {
-      
-      const fecha = newData.fecha || "";
-
-      sheet.getRange(i+1, 2, 1, 3).setValues([[
-        newData.nombre,
-        fecha,
-        newData.comentario
-      ]]);
-      return "Registro actualizado";
-    }
-  }
-  return "No se encontró el id_codigo";
-}
-
-// Eliminar
-function deleteInactivo(id_codigo) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(SHEET_NAME5);
-  const data = sheet.getDataRange().getValues();
-
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == id_codigo) {
-      sheet.deleteRow(i+1);
-      return "Registro eliminado";
-    }
-  }
-  return "No se encontró el id_codigo";
-}
-
-
-
 
 // Funcion para ver los datos de respaldo
 
@@ -255,6 +170,55 @@ function getRespaldo() {
     return obj;
   });
 }
+
+
+// Funcion para agregar un respaldo si es necesario hacerlo se tendra esa opcion
+
+// Agregar
+function addRespaldo(record) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME6);
+
+  sheet.appendRow([
+    record.nombre,
+    record.tipo,
+    record.mes,
+    record.participo,
+    record.hora,
+    record.cursos,
+    record.grupo,
+    record.comentario,
+    record.año
+  ]);
+  return "Registro agregado";
+}
+
+// Esta funcion permite obtener los nombres de la tabla publicadores para respaldo
+
+// Obtener solo los nombres de la hoja de publicadores
+function getDatosPublicadores() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+
+  const idxNombre = headers.indexOf("nombre");
+  const idxId = headers.indexOf("id_codigo");
+  const idxGrupo = headers.indexOf("grupo");
+  const idxTipo = headers.indexOf("tipo");
+
+  if (idxNombre === -1 || idxId === -1 || idxGrupo === -1 || idxTipo === -1) return [];
+
+  return data.slice(1).map(row => ({
+    nombre: row[idxNombre],
+    id_codigo: row[idxId],
+    grupo: row[idxGrupo],
+    tipo: row[idxTipo]
+  })).filter(r => r.nombre); // Filtra vacíos
+}
+
+
+
 
 
 // Funcion para editar respaldo esto con el id universal que si se puede hacer

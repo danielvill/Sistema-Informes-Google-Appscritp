@@ -51,8 +51,10 @@ Revisa los permisos y los nombres de todos los archivos y carpetas: Sistema info
 ⚠️ Permisos: Para cada uno de los archivos de Google Apps Script, debes dar la autorización la primera vez que se ejecute una función. Este paso de autorización se repite en cada script (Informe, Respaldo, Sistema informes).
 
 ⚠️ Dato importante para el sheet: se debe colocar esta formula para la ejecucion
-   =FILTER(publicadores!B2:C; CONTAR.SI.CONJUNTO(form!A:A; publicadores!B2:B; form!G:G; publicadores!C2:C)=0)
-   en la tabla (faltantes)
+   =FILTER(publicadores!B2:C; 
+  (CONTAR.SI.CONJUNTO(form!A:A; publicadores!B2:B; form!G:G; publicadores!C2:C)=0) * 
+  (publicadores!D2:D <> "Inactivo")
+)
    Y tambien que en la tabla (clave) se debe seguir un dato para que funcione la validacion pero en el video aparece
 
 Prueba el sistema para verificar su correcta funcionalidad.

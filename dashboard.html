@@ -60,7 +60,7 @@
         <h2 id="tituloMes" class="text-center mb-3"></h2>
         <div id="reporte" class="fs-5"></div>
         <br><br>
-        <h1 class="text-center mb-4">Resumen Anual</h1>
+        <h1 class="text-center mb-4">Resumen Regulares</h1>
         <div id="reporte2"></div>
     </div>
 
@@ -122,6 +122,11 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Tabla de hermanos que no tienen cursos biblicos  👇 -->
+
+        <div id="tablaSinCursos" class="mt-4">
         </div>
 
         <!-- Mostrar quienes no participaron eso sera por medio de una tabla  👇 -->
@@ -266,7 +271,23 @@
         google.script.run.withSuccessHandler(function (data) {
             renderNoParticipantes(data);
         }).getNoParticipantes(ano, mes);
+
+
+        // Funcion para mostrar los que no tienen cursos biblicos
+        function cargarSinCursos() {
+            const año = document.getElementById("selectAno").value;
+            const mes = document.getElementById("selectMes").value;
+
+            if (!año || !mes) return;
+
+            google.script.run.withSuccessHandler(function (data) {
+                mostrarSinCursosEnTabla(data);
+            }).getSinCursosPorAnioYMes(año, mes);
+        }
+        cargarSinCursos();
     }
+
+
 
     function actualizarGraficoCursos(ano, mes) {
         let periodo = '';
@@ -548,6 +569,47 @@
         document.getElementById("reporte").innerHTML = html;
     }
 
+    // Funcion para mostrar la tabla de los que no tienen cursos biblicos
+    
+    function mostrarSinCursosEnTabla(data) {
+        const contenedor = document.getElementById("tablaSinCursos");
+        contenedor.innerHTML = `
+         <h4>Nombre de los que no dirigen cursos biblicos</h4>
+
+    <table id="tablaSinCursosDT" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Grupo</th>
+          <th>Mes</th>
+          <th>Año</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(item => `
+          <tr>
+            <td>${item.nombre}</td>
+            <td>${item.tipo}</td>
+            <td>${item.grupo}</td>
+            <td>${item.mes}</td>
+            <td>${item.año}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+        // Inicializar DataTable
+        if ($.fn.DataTable.isDataTable('#tablaSinCursosDT')) {
+            $('#tablaSinCursosDT').DataTable().destroy();
+        }
+        $('#tablaSinCursosDT').DataTable();
+    }
+
+
+
+
     // Crear tabla con ID única para DataTables
     function crearTabla(titulo, encabezados, filas, id) {
         let html = `<h3>${titulo}</h3><table id="${id}" class="display table table-striped"><thead><tr>`;
@@ -569,16 +631,7 @@
         Object.keys(reporte).forEach(año => {
             html += `<h2 class="mt-4">📅 Reporte del año ${año}</h2>`;
 
-            // Tabla de personas sin cursos bíblicos
-            const sinCursos = reporte[año].sinCursos.map(p => ({
-                "Nombre": p.nombre,
-                "Tipo": p.tipo,
-                "Mes": p.mes,
-                "Grupo": p.grupo
-            }));
-            html += crearTabla("Personas sin cursos bíblicos", ["Nombre", "Tipo", "Mes", "Grupo"], sinCursos, `tabla${tablaIndex++}`);
-
-            // Tabla de horas por tipo Regular
+            // Tabla de horas por tipo Regular esto corresponde a lo que es reporte 2
             const horas = Object.entries(reporte[año].horasRegulares).map(([nombre, info]) => ({
                 "Nombre": nombre,
                 "Tipo": info.tipo,

@@ -35,8 +35,6 @@ function addPublicador(record) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME);
 
-  
-
   sheet.appendRow([
     record.id_codigo,
     record.nombre,
@@ -173,21 +171,27 @@ function getDetallePublicador(nombreBuscado) {
 
 
 // Funcion para formatear fecha
-function formatDate(value) {
+function formatDate(value, outputFormat = "yyyy-MM-dd") {
   if (value instanceof Date) {
-    return Utilities.formatDate(value, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), outputFormat);
   }
   if (typeof value === "string" && value.trim() !== "") {
-    // Intentar parsear si viene como texto
-    const parts = value.split(/[\/\-]/); // soporta dd/mm/yyyy o dd-mm-yyyy
+    const parts = value.split(/[\/\-]/);
     if (parts.length === 3) {
       let [d, m, y] = parts;
-      return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+      if (y.length === 4) {
+        if (outputFormat === "dd/MM/yyyy") {
+          return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+        } else {
+          return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+        }
+      }
     }
-    return value; // devolver como está si no se puede parsear
+    return value;
   }
-  return ""; // vacío si no hay nada
+  return "";
 }
+
 
 
 // Para descargar los pdf 
@@ -216,6 +220,16 @@ function continuarDescarga() {
   // Filtrar respaldo por año
   const respaldoFiltrado = dataRes.filter(r => r[headersRes.indexOf("año")] == año);
 
+  // Si no hay registros de ese año, detener
+  if (respaldoFiltrado.length === 0) {
+    return { porcentaje: 0, finalizado: true, mensaje: "No hay registros para el año " + año };
+  }
+
+  // 👉 Crear carpeta Año una sola vez aquí
+  const root = DriveApp.getFoldersByName(año).hasNext()
+    ? DriveApp.getFoldersByName(año).next()
+    : DriveApp.createFolder(año);
+
   // Lote de 20 publicadores
   const lote = dataPub.slice(offset, offset + 20);
 
@@ -224,11 +238,26 @@ function continuarDescarga() {
     const nombre = pub[headersPub.indexOf("nombre")];
     const grupo = pub[headersPub.indexOf("grupo")];
 
+    // Buscar registros de respaldo de esa persona
     const registros = respaldoFiltrado.filter(r => r[headersRes.indexOf("nombre")] == nombre);
+
+    // Tomar el tipo desde respaldo (si hay varios, tomamos el primero)
+    const tipo = registros.length > 0 ? registros[0][headersRes.indexOf("tipo")] : "SinTipo";
 
     // Generar HTML con tu plantilla
     const html = HtmlService.createTemplateFromFile("plantillaPDF");
-    html.publicador = Object.fromEntries(headersPub.map((h, i) => [h, pub[i]]));
+    // Aquí formateamos las fechas antes de pasarlas a la plantilla
+    const pubObj = Object.fromEntries(headersPub.map((h, i) => {
+      let val = pub[i];
+      if (h === "fecha_n" || h === "fecha_b") {
+        val = formatDate(val, "dd/MM/yyyy"); // forzamos formato legible
+      }
+      return [h, val];
+    }));
+
+    html.publicador = pubObj;
+
+    // Los registros también se pasan tal cual, pero si quieres podrías formatear fechas aquí igual
     html.registros = registros.map(r => Object.fromEntries(headersRes.map((h, i) => [h, r[i]])));
 
     const content = html.evaluate().getContent();
@@ -238,10 +267,10 @@ function continuarDescarga() {
       ? DriveApp.getFoldersByName(año).next()
       : DriveApp.createFolder(año);
 
-    // Subcarpeta Grupo
-    const folder = root.getFoldersByName("Grupo " + grupo).hasNext()
-      ? root.getFoldersByName("Grupo " + grupo).next()
-      : root.createFolder("Grupo " + grupo);
+    // Subcarpeta Tipo
+    const folder = root.getFoldersByName(tipo).hasNext()
+      ? root.getFoldersByName(tipo).next()
+      : root.createFolder(tipo);
 
     // Guardar PDF
     const blob = Utilities.newBlob(content, "text/html", nombre + ".html");
@@ -256,5 +285,87 @@ function continuarDescarga() {
   const finalizado = offset >= dataPub.length;
   const porcentaje = Math.min(100, Math.round((offset / dataPub.length) * 100));
 
+
+  // 👉 Aquí llamas al resumen, solo cuando ya terminó todo
+  if (finalizado) {
+    generarResumenPorTipo(año, headersPub, headersRes, dataPub, respaldoFiltrado, root);
+  }
   return { porcentaje, finalizado };
 }
+
+
+// Este genera un reporte por cada uno osea el total de cada uno
+function generarResumenPorTipo(año, headersPub, headersRes, dataPub, respaldoFiltrado, rootFolder) {
+  // Agrupar por tipo
+  const tipos = ["Publicador", "Auxiliar", "Regular","Inactivo"];
+
+  tipos.forEach(tipo => {
+    
+   
+    // Filtrar directamente desde respaldo por tipo recuerda que es de respaldo la tabla respaldo
+    const registrosTipo = respaldoFiltrado.filter(r => r[headersRes.indexOf("tipo")] == tipo);
+
+
+    if (registrosTipo.length === 0) return; // si no hay nada, no genera
+
+    // 👉 Agrupar por mes
+    const registrosPorMes = {};
+    registrosTipo.forEach(r => {
+      const mes = r[headersRes.indexOf("mes")];
+      if (!registrosPorMes[mes]) registrosPorMes[mes] = [];
+      registrosPorMes[mes].push(r);
+    });
+
+    // Crear objeto publicador ficticio para el resumen
+    const pubObj = {
+      nombre: tipo + "", // ej. "Publicadores"
+      fecha_n: "",
+      fecha_b: "",
+      sexo: "",
+      condicion: "",
+      anciano: "",
+      siervo: "",
+      regular: "",
+      especial: "",
+      misionero: "",
+      comentario: "Resumen mensual de informes"
+    };
+
+    // 👉 Crear registros ficticios por cada mes
+    const registrosResumen = [];//
+    for (const mes in registrosPorMes) {
+      const registrosMes = registrosPorMes[mes];
+      const informes = registrosMes.filter(r => r[headersRes.indexOf("participo")] == "Si").length;
+      const totalCursos = registrosMes.reduce((acc, r) => acc + (Number(r[headersRes.indexOf("cursos")]) || 0), 0);
+      const totalHoras = registrosMes.reduce((acc, r) => acc + (Number(r[headersRes.indexOf("hora")]) || 0), 0);
+
+      registrosResumen.push({
+        mes: mes,
+        participo: "",
+        cursos: totalCursos,
+        tipo: "",
+        hora: totalHoras,
+        comentario: "Informes entregados: " + informes,
+        año: año
+      });
+    }
+
+    // Generar HTML con plantilla
+    const html = HtmlService.createTemplateFromFile("plantillaPDF");
+    html.publicador = pubObj;
+    html.registros = registrosResumen;
+
+    const content = html.evaluate().getContent();
+
+    // Carpeta por tipo
+    const folder = rootFolder.getFoldersByName(tipo).hasNext()
+      ? rootFolder.getFoldersByName(tipo).next()
+      : rootFolder.createFolder(tipo);
+
+    // Guardar PDF
+    const blob = Utilities.newBlob(content, "text/html", tipo + ".html");
+    const pdf = blob.getAs("application/pdf");
+    folder.createFile(pdf).setName("Resumen_" + tipo + "_" + año + ".pdf");
+  });
+}
+

@@ -125,6 +125,11 @@
         text-align: center;
         padding: 5px;
     }
+
+    .tr {
+        background-color: #4A2E70;
+        color: #FFFFFF;
+    }
 </style>
 
 <div class="container my-3">
@@ -133,7 +138,8 @@
     <h2>Lista de Publicadores</h2>
     <div class="mb-3">
         <label for="inputAño">Año:</label>
-        <input type="number" id="inputAño" class="form-control" placeholder="Ingresa un año para la descarga ejemplo:2023">
+        <input type="number" id="inputAño" class="form-control"
+            placeholder="Ingresa un año para la descarga ejemplo:2023">
     </div>
 
     <button id="btnDescargar" class="btn btn-primary">Descargar PDFs</button>
@@ -141,6 +147,7 @@
     <div class="progress mt-3">
         <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
     </div>
+    <div id="mensajeDescarga" class="mt-2 text-info fw-bold"></div>
 
 
     <div id="lista">
@@ -173,32 +180,54 @@
 
 
 <script>
-    // Este es para descargar los pdf eso tomar en cuenta 
     document.getElementById("btnDescargar").addEventListener("click", () => {
         const año = document.getElementById("inputAño").value;
+        const mensaje = document.getElementById("mensajeDescarga");
+
         if (!año) {
             alert("Por favor ingresa un año");
             return;
         }
+
+        mensaje.textContent = "📦 Comienza la descarga...";
         google.script.run
             .withSuccessHandler(actualizarProgreso)
             .iniciarDescarga(año);
     });
 
     function actualizarProgreso(info) {
+        if (info.mensaje) {
+            alert(info.mensaje);
+            return;
+        }
+
         const bar = document.getElementById("progressBar");
+        const mensaje = document.getElementById("mensajeDescarga");
+
         bar.style.width = info.porcentaje + "%";
         bar.textContent = info.porcentaje + "%";
+
+        // Mensajes adaptados al progreso
+        if (info.porcentaje < 25) {
+            mensaje.textContent = "📦 Comienza la descarga dependiendo de los datos esto puede demorar por favor no te salgas...";
+        } else if (info.porcentaje < 60) {
+            mensaje.textContent = "⏳ La paciencia es importante...";
+        } else if (info.porcentaje < 100) {
+            mensaje.textContent = "🚀 Ya casi termina...";
+        }
+
         if (info.finalizado) {
+            mensaje.textContent = "✅ Descarga completada";
             alert("Descarga completada");
         } else {
-            // seguir llamando hasta terminar
             google.script.run
                 .withSuccessHandler(actualizarProgreso)
                 .continuarDescarga();
         }
     }
 </script>
+
+
 
 <script>
     // Cargar lista de publicadores
@@ -313,11 +342,11 @@
       </div>
 
       <div class="service-types">
-        <div class="checkbox-group"><input type="checkbox" ${data.publicador.anciano ? "checked" : ""}> Anciano</div>
-        <div class="checkbox-group"><input type="checkbox" ${data.publicador.siervo ? "checked" : ""}> Siervo ministerial</div>
-        <div class="checkbox-group"><input type="checkbox" ${data.publicador.regular ? "checked" : ""}> Precursor regular</div>
-        <div class="checkbox-group"><input type="checkbox" ${data.publicador.especial ? "checked" : ""}> Precursor especial</div>
-        <div class="checkbox-group"><input type="checkbox" ${data.publicador.misionero ? "checked" : ""}> Misionero</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.anciano == "Anciano"  ? "checked" : ""}> Anciano</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.siervo == "Siervo ministerial" ? "checked" : ""}> Siervo ministerial</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.regular == "Precursor regular" ? "checked" : ""}> Precursor regular</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.especial == "Precursor especial" ? "checked" : ""}> Precursor especial</div>
+        <div class="checkbox-group"><input type="checkbox" ${data.publicador.misionero == "Misionero" ? "checked" : ""}> Misionero</div>
       </div>
 
       <table class="main-table">

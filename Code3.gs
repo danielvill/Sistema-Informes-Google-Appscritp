@@ -5,7 +5,7 @@ function dashboard() {
     return HtmlService.createHtmlOutputFromFile('dashboard').getContent();
 }
 
-// Este es reporte mensual
+// Este es reporte mensual para los datos resumidos
 
 function getReporteData() {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -60,8 +60,7 @@ function getReporteData() {
 }
 
 
-// Reporte por año 
-
+// Reporte por año para obtener los datos de precursores regulares las horas completas
 function getReportePorAnio() {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName(SHEET_NAME6);
@@ -69,45 +68,35 @@ function getReportePorAnio() {
     const headers = data.shift();
 
     const añoIndex = headers.indexOf("año");
-    const cursosIndex = headers.indexOf("cursos");
     const tipoIndex = headers.indexOf("tipo");
     const nombreIndex = headers.indexOf("nombre");
     const grupoIndex = headers.indexOf("grupo");
     const horaIndex = headers.indexOf("hora");
-    const mesIndex = headers.indexOf("mes");
 
     const reporte = {};
 
     data.forEach(row => {
         const año = row[añoIndex];
-        if (!reporte[año]) {
-            reporte[año] = {
-                sinCursos: [],
-                horasRegulares: {}
-            };
-        }
+        const tipo = row[tipoIndex];
+        const nombre = row[nombreIndex];
+        const grupo = row[grupoIndex];
+        const horas = Number(row[horaIndex]) || 0;
 
-        // Personas sin cursos bíblicos
-        if (!row[cursosIndex]) {
-            reporte[año].sinCursos.push({
-                nombre: row[nombreIndex],
-                tipo: row[tipoIndex],
-                mes: row[mesIndex],
-                grupo: row[grupoIndex]
-            });
-        }
+        if (tipo === "Regular") {
+            if (!reporte[año]) {
+                reporte[año] = {
+                    horasRegulares: {}
+                };
+            }
 
-        // Sumar horas por tipo Regular
-        if (row[tipoIndex] === "Regular") {
-            const nombre = row[nombreIndex];
-            const horas = Number(row[horaIndex]) || 0;
             if (!reporte[año].horasRegulares[nombre]) {
                 reporte[año].horasRegulares[nombre] = {
                     tipo: "Regular",
-                    grupo: row[grupoIndex],
+                    grupo: grupo,
                     horas: 0
                 };
             }
+
             reporte[año].horasRegulares[nombre].horas += horas;
         }
     });
@@ -238,12 +227,16 @@ function getResumenPorTipo() {
         mes: headers.indexOf("mes"),
         año: headers.indexOf("año"),
         hora: headers.indexOf("hora"),
-        cursos: headers.indexOf("cursos")
+        cursos: headers.indexOf("cursos"),
+        participo: headers.indexOf("participo") // 👈 nuevo índice
     };
 
     let resumen = {};
 
     data.forEach(row => {
+        const participo = row[idx.participo];
+        if (participo !== "Si") return; // 👈 filtrar solo los que participaron
+
         const key = `${row[idx.mes]}-${row[idx.año]}`;
         if (!resumen[key]) {
             resumen[key] = {
@@ -252,6 +245,7 @@ function getResumenPorTipo() {
                 Auxiliar: { cantidad: 0, horas: 0, cursos: 0 }
             };
         }
+
         const tipo = row[idx.tipo];
         if (resumen[key][tipo]) {
             resumen[key][tipo].cantidad++;
@@ -305,4 +299,40 @@ function getNoParticipantes(ano, mes) {
     }
 
     return result;
+}
+
+
+// Funcion que toma las personas que no tiene cursos biblicos por año y mes
+function getSinCursosPorAnioYMes(añoSeleccionado, mesSeleccionado) {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME6);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+
+    const añoIndex = headers.indexOf("año");
+    const cursosIndex = headers.indexOf("cursos");
+    const tipoIndex = headers.indexOf("tipo");
+    const nombreIndex = headers.indexOf("nombre");
+    const grupoIndex = headers.indexOf("grupo");
+    const mesIndex = headers.indexOf("mes");
+
+    const resultado = [];
+
+    data.forEach(row => {
+        const año = row[añoIndex];
+        const mes = row[mesIndex];
+        const tieneCurso = row[cursosIndex];
+
+        if (año == añoSeleccionado && mes == mesSeleccionado && !tieneCurso) {
+            resultado.push({
+                nombre: row[nombreIndex],
+                tipo: row[tipoIndex],
+                grupo: row[grupoIndex],
+                mes: mes,
+                año: año
+            });
+        }
+    });
+
+    return resultado;
 }
