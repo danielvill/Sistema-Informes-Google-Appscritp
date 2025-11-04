@@ -17,10 +17,19 @@ function doGet(e) {
 // Esta envia los datos del form a la hoja de calculo
 function submitData(nombre, tipo, mes, participo, hora, cursos, grupo, comentario, year) {
   
+   // Validación de rango de fechas (solo del 1 al 20)
+  const hoy = new Date();
+  const dia = hoy.getDate();
+  if (dia < 1 || dia > 20) {
+    return 'error: FueraDeRango';
+  }
+ 
   // Validación del lado del servidor para Regular y Auxiliar
   if ((tipo === 'Regular' || tipo === 'Auxiliar') && (hora === '' || hora === null || hora === undefined )) {
     return 'error: Debe ingresar las horas para precursores Regular y Auxiliar';
   }
+
+  
   
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('form');
   const lastRow = sheet.getLastRow();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formulario de informes</title>
+  <title>Recoleccion de informe Bocana</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -153,7 +153,11 @@
     google.script.run.withSuccessHandler(function (response) {
         if (response === 'success') {
             mostrarPaginaGracias();
-        } else if (response.includes('Ya ingresó su informe')) {
+        }
+        else if (response.includes('error: FueraDeRango')) {
+            mostrarPaginaError3();
+        }
+         else if (response.includes('Ya ingresó su informe')) {
             mostrarPaginaError1();
         } else if (response.includes('Debe ingresar las horas')) {
             mostrarPaginaError2();
@@ -283,14 +287,17 @@ function mostrarPaginaError2() {
     `;
 }
 
-
-
-
-
-
-
-
-
+function mostrarPaginaError3() {
+    document.body.innerHTML = `
+        <div style="text-align: center; padding: 50px; font-family: Arial;">
+            <h1 style="color: red;">⚠ Fuera de rango de fechas</h1>
+            <p style="color: white;">Solo se recolectan informes del <b>1 al 20</b> de cada mes. Por favor espere a esa fecha para enviar su informe.</p>
+            <button onclick="restoreForm()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px;">
+                Volver al formulario
+            </button>
+        </div>
+    `;
+}
 
 
 // Función adicional para validar en tiempo real cuando cambie el tipo
