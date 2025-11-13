@@ -132,7 +132,7 @@
         <!-- Mostrar quienes no participaron eso sera por medio de una tabla  👇 -->
         <div id="tablaNoParticipantes" style="margin-top:20px;">
             <h4>Hermanos que no participaron en alguna faceta del ministerio</h4>
-            <table class="table table-striped">
+            <table id="tablaNoParticipantesDT" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Nombre</th>
@@ -536,6 +536,12 @@
                 "<td>" + (r.comentario || "-") + "</td>";
             tbody.appendChild(tr);
         });
+
+        // Inicializar DataTable correctamente sobre el <table>
+        if ($.fn.DataTable.isDataTable('#tablaNoParticipantesDT')) {
+            $('#tablaNoParticipantesDT').DataTable().destroy();
+        }
+        $('#tablaNoParticipantesDT').DataTable();
     }
 
 
@@ -570,7 +576,7 @@
     }
 
     // Funcion para mostrar la tabla de los que no tienen cursos biblicos
-    
+
     function mostrarSinCursosEnTabla(data) {
         const contenedor = document.getElementById("tablaSinCursos");
         contenedor.innerHTML = `

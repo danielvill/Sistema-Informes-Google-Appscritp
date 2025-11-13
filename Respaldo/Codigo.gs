@@ -3,7 +3,7 @@
 const SPREADSHEET_ID = ""; // Se coloca el ID de la hoja de calculo de google sheet
 const SHEET_NAME2 = "form";
 const SHEET_NAME3 = "respaldo";
-const FOLDER_NAME = "Recolección de informes";
+const FOLDER_NAME = "Respaldo";
 
 function respaldo() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
