@@ -1,0 +1,471 @@
+<style>
+  /* Estilos SOLO para el chat, sin afectar nada más */
+  #chatContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  }
+
+  #chatContainer * {
+    box-sizing: border-box;
+  }
+
+  .chat-header-custom {
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 20, 25, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-header-custom h1 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .chat-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-messages-area::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .chat-messages-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-messages-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  .chat-messages-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .messages-wrapper-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .welcome-section-custom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .welcome-icon-custom {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    animation: float-custom 3s ease-in-out infinite;
+  }
+
+  @keyframes float-custom {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .welcome-text-custom h2 {
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+  }
+
+  .welcome-text-custom p {
+    color: #a0a0a0;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .message-custom {
+    display: flex;
+    gap: 12px;
+    animation: slideIn-custom 0.3s ease-out;
+  }
+
+  @keyframes slideIn-custom {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .message-custom.user {
+    justify-content: flex-end;
+  }
+
+  .message-custom.ai {
+    justify-content: flex-start;
+  }
+
+  .message-avatar-custom {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .ai .message-avatar-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+  }
+
+  .user .message-avatar-custom {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+  }
+
+  .message-bubble-custom {
+    max-width: 600px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .user .message-bubble-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 18px 18px 4px 18px;
+  }
+
+  .ai .message-bubble-custom {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px 18px 18px 4px;
+  }
+
+  .typing-indicator-custom {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .typing-dot-custom {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    animation: typing-custom 1.4s infinite;
+  }
+
+  .typing-dot-custom:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .typing-dot-custom:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot-custom:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing-custom {
+
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+
+    30% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .input-area-custom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px;
+    background: rgba(15, 20, 25, 0.4);
+    backdrop-filter: blur(10px);
+  }
+
+  .input-wrapper-custom {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .input-field-custom {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    resize: none;
+    max-height: 120px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .input-field-custom:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+  }
+
+  .input-field-custom::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .send-btn-custom {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .send-btn-custom:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .send-btn-custom:active {
+    transform: scale(0.95);
+  }
+
+  .send-btn-custom:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: scale(1);
+  }
+
+  .footer-text-custom {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 8px;
+  }
+
+
+  .message-bubble-custom table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #000;
+    /* texto negro */
+    background: #fff;
+    /* fondo blanco */
+  }
+
+  .message-bubble-custom th,
+  .message-bubble-custom td {
+    border: 1px solid #ccc;
+    /* bordes grises */
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  .message-bubble-custom th {
+    background: #f5f5f5;
+    /* encabezado gris claro */
+    font-weight: bold;
+  }
+
+  .message-bubble-custom tr:nth-child(even) {
+    background: #fafafa;
+    /* filas alternas gris muy claro */
+  }
+</style>
+<div id="chatContainer">
+  <div class="chat-messages-area" id="chatMessagesArea">
+    <div class="messages-wrapper-custom" id="messagesWrapper">
+      <div class="welcome-section-custom">
+        <div class="welcome-icon-custom">
+          <i class="fas fa-sparkles"></i>
+        </div>
+        <div class="welcome-text-custom">
+          <h2>¡Hola! Soy tu Asistente IA</h2>
+          <p>Hazme preguntas sobre los Informes</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area-custom">
+    <div class="input-wrapper-custom">
+      <textarea id="messageInput" class="input-field-custom" placeholder="Escribe tu mensaje aquí..." rows="1"
+                onkeypress="handleKeyPress(event)"></textarea>
+      <button class="send-btn-custom" id="sendBtn" onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+  <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471z"/>
+</svg>
+            </button>
+    </div>
+    <p class="footer-text-custom">Recuerda que al ser un modelo de IA puedo tener errores comprueba las respuesta</p>
+  </div>
+</div>
+
+<script>
+  const messagesWrapper = document.getElementById('messagesWrapper');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessagesArea = document.getElementById('chatMessagesArea');
+
+    // Auto resize textarea
+    messageInput.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function scrollToBottom() {
+        chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Remove welcome section
+        const welcomeSection = document.querySelector('.welcome-section-custom');
+        if (welcomeSection) welcomeSection.remove();
+
+        // Show user message
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message-custom user';
+        userMessage.innerHTML = `
+            <div class="message-bubble-custom">${escapeHtml(message)}</div>
+            <div class="message-avatar-custom"><i class="fas fa-user"></i></div>
+        `;
+        messagesWrapper.appendChild(userMessage);
+
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        scrollToBottom();
+
+        // Show typing indicator
+        const typingMessage = document.createElement('div');
+        typingMessage.className = 'message-custom ai';
+        typingMessage.innerHTML = `
+            <div class="message-avatar-custom"><i class="fas fa-robot"></i></div>
+            <div class="message-bubble-custom">
+                <div class="typing-indicator-custom">
+                    <div class="typing-dot-custom"></div>
+                    <div class="typing-dot-custom"></div>
+                    <div class="typing-dot-custom"></div>
+                </div>
+            </div>
+        `;
+        messagesWrapper.appendChild(typingMessage);
+        scrollToBottom();
+
+        // En vez de fetch, usa google.script.run y para soporte de markdown y html 
+        google.script.run
+  .withSuccessHandler(function (data) {
+      typingMessage.remove();
+      const aiMessage = document.createElement('div');
+      aiMessage.className = 'message-custom ai';
+
+      // Convertir Markdown a HTML
+      const htmlReply = marked.parse(data.reply);
+
+      aiMessage.innerHTML = `
+        <div class="message-avatar-custom"><i class="fas fa-robot"></i></div>
+        <div class="message-bubble-custom">${htmlReply}</div>
+      `;
+      messagesWrapper.appendChild(aiMessage);
+      scrollToBottom();
+  })
+
+            .withFailureHandler(function (error) {
+                typingMessage.remove();
+                showError("Error interno: " + error);
+                scrollToBottom();
+            })
+            .doPost({ message: message });  // 👈 aquí mandas el mensaje al backend
+
+
+        scrollToBottom();
+    }
+
+    function showError(msg) {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'message-custom ai';
+        errorMessage.innerHTML = `
+            <div class="message-avatar-custom"><i class="fas fa-robot"></i></div>
+            <div class="message-bubble-custom">${escapeHtml(msg)}</div>
+        `;
+        messagesWrapper.appendChild(errorMessage);
+    }
+
+    messageInput.focus();
+
+    // Exponerlas al global
+    window.handleKeyPress = handleKeyPress;
+    window.sendMessage = sendMessage;
+</script>

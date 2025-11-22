@@ -517,14 +517,24 @@
 
     // Funcion para renderizar la tabla de no participantes nueva tabla
     function renderNoParticipantes(data) {
+        const tableId = '#tablaNoParticipantesDT';
         const tbody = document.getElementById("tbodyNoParticipantes");
+
+        // 1. IMPORTANTE: Destruir la instancia anterior de DataTable ANTES de borrar el HTML
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            $(tableId).DataTable().destroy();
+        }
+
+        // 2. Ahora sí, limpiamos el HTML y ponemos los datos nuevos
         tbody.innerHTML = "";
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No hay registros</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No hay registros para este período</td></tr>";
+            // No inicializamos DataTable si está vacío para que se vea el mensaje limpio
             return;
         }
 
+        // 3. Crear las nuevas filas
         data.forEach(function (r) {
             const tr = document.createElement("tr");
             tr.innerHTML =
@@ -537,11 +547,14 @@
             tbody.appendChild(tr);
         });
 
-        // Inicializar DataTable correctamente sobre el <table>
-        if ($.fn.DataTable.isDataTable('#tablaNoParticipantesDT')) {
-            $('#tablaNoParticipantesDT').DataTable().destroy();
-        }
-        $('#tablaNoParticipantesDT').DataTable();
+        // 4. Inicializar DataTable de nuevo con opciones en español y sin ordenamiento automático molesto
+        $(tableId).DataTable({
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+            },
+            pageLength: 10,
+            destroy: true // Asegura que si quedaba algo, lo sobrescriba
+        });
     }
 
 

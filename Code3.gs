@@ -302,6 +302,7 @@ function getNoParticipantes(ano, mes) {
 }
 
 
+
 // Funcion que toma las personas que no tiene cursos biblicos por año y mes
 function getSinCursosPorAnioYMes(añoSeleccionado, mesSeleccionado) {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
