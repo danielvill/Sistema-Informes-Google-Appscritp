@@ -6,7 +6,7 @@ function doGet() {
 }
 
 // Estas son variables para todo el codigo si son para el editar y eliminar y el agregar
-const SPREADSHEET_ID = "109bLJlH8YtfZPXjmOm2regsxh3bV6ydf_THEvDNpzq4"; // Aqui va el codigo del ID de la hoja de calculo de google
+const SPREADSHEET_ID = ""; // Aqui va el codigo del ID de la hoja de calculo de google
 const SHEET_NAME = "publicadores";
 const SHEET_NAME2 = "form";
 const SHEET_NAME3 = "respaldo";
